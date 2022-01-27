@@ -1,0 +1,30 @@
+{
+	"name": "i-can-has-neural-network",
+	"version": "1.0.0",
+	"description": "spot to play neural network fun times",
+	"main": "src/index.js",
+	"scripts": {
+		"test": "jest"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/luckybit4755/i-can-has-neural-network.git"
+	},
+	"keywords": [
+		"neural network",
+		"ml",
+		"learning"
+	],
+	"author": "Vgvm",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/luckybit4755/i-can-has-neural-network/issues"
+	},
+	"homepage": "https://github.com/luckybit4755/i-can-has-neural-network#readme",
+	"dependencies": {
+		"numjs": "^0.16.1"
+	},
+	"devDependencies": {
+		"jest": "^27.4.7"
+	}
+}
