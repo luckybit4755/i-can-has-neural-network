@@ -1,6 +1,7 @@
 #!/usr/bin/env node 
 
-const nj = require('../src/njeez');
+// FIXME: this path here is terrible...
+const nj = require('../../src/util/njeez');
 
 const verify = ( arr, expected ) => {
 	const a = nj.toArray( arr );
@@ -35,14 +36,14 @@ test( 'nj.3d', () => {
 
 test( 'nj.lamda1', () => { 
 	verify( 
-		nj.array([2,3,5]).lamda( (v,i,n)=> v + 10 * i )
+		nj.lamda( nj.array([2,3,5]), (v,i,n)=> v + 10 * i )
 		, '[2,13,25]'
 	);
 });
 
 test( 'nj.lamda2', () => { 
 	verify( 
-		nj.array([[2,3,5],[7,9,11]]).lamda( (v,i,n)=> v + 100 * i  )
+		nj.lamda( nj.array([[2,3,5],[7,9,11]]), (v,i,n)=> v + 100 * i  )
 		, '[[2,103,205],[307,409,511]]'
 	);
 });

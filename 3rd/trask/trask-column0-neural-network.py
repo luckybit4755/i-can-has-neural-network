@@ -1,4 +1,4 @@
-import numpy as np
+import numpy as np # from http://iamtrask.github.io/2015/07/12/basic-python-network/
  
 # sigmoid function
 def nonlin(x,deriv=False):
