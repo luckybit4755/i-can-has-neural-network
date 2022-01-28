@@ -1,8 +1,8 @@
 #!/usr/bin/env node 
 
-const trask_2_layer_neural_network_redux = require( '../../src/nn/trask-column0-neural-network-redux' );
+const trask_2_layer_nn_redux = require( '../../src/nn/trask-column0-nn-redux' );
 
-test('trask-2-layer-neural-network-redux',()=> {
+test('trask-2-layer-nn-redux',()=> {
 	const data = {
 		input:[
 			[0,0,1],
@@ -12,7 +12,7 @@ test('trask-2-layer-neural-network-redux',()=> {
 		],
 		labels:[[0,0,1,1]]
 	}
-    const output = trask_2_layer_neural_network_redux( data );
+    const output = trask_2_layer_nn_redux( data );
 	expect( output[ 0 ] ).toBeLessThan(.01);
 	expect( output[ 1 ] ).toBeLessThan(.01);
 	expect( output[ 2 ] ).toBeGreaterThan(.99);

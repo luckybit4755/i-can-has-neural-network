@@ -8,7 +8,7 @@ const nonlin = (x,deriv=false) => {
 	return deriv ? x*(1-x) : 1/(1+Math.exp(-x));
 }
 
-const trask_2_layer_neural_network = () => {
+const trask_2_layer_nn = () => {
 	// input dataset
 	const X = nj.array([  [0,0,1],
 		[0,1,1],
@@ -58,5 +58,5 @@ const trask_2_layer_neural_network = () => {
     return l1.selection.data;
 };
 
-module.exports = trask_2_layer_neural_network;
-trask_2_layer_neural_network();
+module.exports = trask_2_layer_nn;
+trask_2_layer_nn();

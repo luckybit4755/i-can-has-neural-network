@@ -47,7 +47,7 @@ const train = ( input, labels, weights0 ) => {
 	return weights0;
 };
 
-const trask_2_layer_neural_network_redux = ( data = createData() ) => {
+const trask_2_layer_nn_redux = ( data = createData() ) => {
 	const input = nj.array( data.input );
 	const labels = nj.array( data.labels ).T;	
 	const threshold = 0.001;
@@ -83,4 +83,4 @@ const trask_2_layer_neural_network_redux = ( data = createData() ) => {
     return output;
 };
 
-module.exports = trask_2_layer_neural_network_redux;
+module.exports = trask_2_layer_nn_redux;
