@@ -1,11 +1,12 @@
 #!/usr/bin/env node 
 
 const nj = require('../util/njeez');
+const tougher = !true;
 
 const nonlin = (x,deriv=false) => {
 	if ( nj.isArray( x ) ) return nj.lamda( x, v => nonlin( v,deriv ) );
 
-	//return deriv ? x * ( 1 - x ) : 1 / ( 1 + Math.exp( -x ) ); // og
+	return deriv ? x * ( 1 - x ) : 1 / ( 1 + Math.exp( -x ) ); // sigmoid
 
 	// more like relu for fun
 	return (
@@ -22,10 +23,19 @@ const createData = ( count = 100 ) => {
 	const input = new Array( count )
 		.fill( 0 )
 		.map( 
-			(r,i) => new Array( 3 ).fill( 0 ).map( (v,j) => 0 == j ? i % 2 : Math.random() )
+			(r,i) => new Array( 3 ).fill( 0 ).map( (_,j) => {
+				if ( j ) return Math.random();
+				const o = i % 2;
+				if ( !tougher ) return o;
+				// bit too tough for this network I guess. gets from 
+				// 80 = 90% accuracy using sigmoid and 100x training set
+				const d = .4 * Math.random();
+				const v = o ? ( o - d ) : ( o + d );
+				return v;
+			})
 		)
 	;
-	return { input:input, labels:[input.map(r=>r[0])]};
+	return { input:input, labels:[input.map(r=>Math.round(r[0]))]};
 };
 
 const predict = ( input, weights0 ) => {
@@ -47,14 +57,14 @@ const train = ( input, labels, weights0 ) => {
 	return weights0;
 };
 
-const trask_2_layer_nn_redux = ( data = createData() ) => {
+const trask_2_layer_nn_redux = ( data = createData( tougher ? 1000 : 10 ) ) => {
 	const input = nj.array( data.input );
 	const labels = nj.array( data.labels ).T;	
 	const threshold = 0.001;
 
 	let weights0 = nj.random( input.shape[1], 1 ).multiply( 2 ).subtract( 1 );
 
-	for ( let i = 0 ; i < 10000 ; i++ ) {
+	for ( let i = 0 ; i < 10 * 1000 ; i++ ) {
 		weights0 = train( input, labels, weights0 );
 		if ( weights0.error < threshold ) {
 			console.log( 'error', weights0.error, 'at', i, 'is under threshold', threshold );
