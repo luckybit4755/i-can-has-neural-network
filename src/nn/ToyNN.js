@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
 const nj = require('../util/njeez');
+const DataBuddy = require('../util/DataBuddy');
 
 // based on trask examples
-module.exports = 
-class ToyNN {
+module.exports = class ToyNN {
 	constructor() {
 		this.shape = Array.from( arguments );
 		this.weights = new Array( this.shape.length - 1 ).fill( 0 ).map( (r,i) => 
@@ -34,43 +34,105 @@ class ToyNN {
 		return current;
 	}
 
-	train( trainingData, iterations = 10 * 1000, threshold = -33 ) {
+	train( trainingData, iterations = 10 * 1000, threshold = .001 ) {//-33 ) {
 		const inputs = nj.array( trainingData.inputs );
 		const labels = nj.array( [trainingData.labels] ).T;
 
 		let output = null;
-		for ( let i = 0, error = 2022 ; i < iterations /*&& error > threshold*/ ; i++ ) {
-			const layers = new Array( this.shape.length );
-			layers[ 0 ] = inputs;
-
-			// forward
-			for ( let l = 1 ; l < this.shape.length ; l++ ) {
-				const prior = layers[ l - 1 ];
-				const weights = this.weights[ l - 1 ];
-				layers[ l ] = this.nonlin( nj.dot( prior, weights ) );
-			}
+		for ( let i = 0 ; i < iterations ; i++ ) {
+			const layers = this.forwardPropagation( inputs );
 			output = layers[ this.shape.length - 1 ];
-
-			// backwards
-			let error = null;
-			for ( let l = layers.length - 1 ; l > 0 ; l-- ) {
-				const layer = layers[ l ];
-				const prior = layers[ l - 1 ];
-
-				error = (
-					error 
-					? nj.dot( error, this.weights[ l ].T )
-					: nj.subtract( labels , layer )
-				);
-				
-				const scale = this.nonlin( layer, true );
-        		const delta = nj.multiply( error , scale );
-				const update = prior.T.dot( delta );
-
-        		this.weights[ l - 1 ] = nj.add( this.weights[ l - 1 ], update );
+			const error = this.backPropagation( labels, layers );
+			if ( error < threshold ) {
+				console.log( 'error threshold beaten at', i, 'of', iterations, 'iterations' );
+				break;
 			}
 		}
 		return output;
 	}
-};
 
+	forwardPropagation( inputs ) {
+		const layers = new Array( this.shape.length );
+		layers[ 0 ] = inputs;
+
+		for ( let l = 1 ; l < this.shape.length ; l++ ) {
+			const prior = layers[ l - 1 ];
+			const weights = this.weights[ l - 1 ];
+			layers[ l ] = this.nonlin( nj.dot( prior, weights ) );
+		}
+		return layers;
+	}
+
+	backPropagation( labels, layers ) {
+		let result = null;
+		let error = null;
+
+		for ( let l = layers.length - 1 ; l > 0 ; l-- ) {
+			const layer = layers[ l ];
+			const prior = layers[ l - 1 ];
+
+			error = ( null == error 
+				? nj.subtract( labels, layer )
+				: nj.dot( error, this.weights[ l ].T )
+			);
+			if ( !result ) result = nj.std( error );
+			
+			const scale = this.nonlin( layer, true );
+	    	const delta = nj.multiply( error , scale );
+			const update = prior.T.dot( delta );
+	    	this.weights[ l - 1 ] = nj.add( this.weights[ l - 1 ], update );
+		}
+
+		return result;
+	}
+
+	/////////////////////
+
+	gradientDescent( inputs, labels, alpha ) {
+		const layers = new Array( this.shape.length ).fill(0);
+        const deltas = new Array( this.shape.length - 1 ).fill( 0 );
+
+		// feed forward
+
+		let last;
+		for ( let l = 0 ; l < layers.length ; l++ ) {
+			last = layers[ l ] = ( 0 == l 
+				? inputs
+				: this.nonlin( nj.dot( last, this.weights[ l - 1 ] ))
+			);
+		}
+
+		// feed the error deltas backwards
+		for ( let l = 0 ; l < deltas.length ; l++ ) {
+            const deltaIndex = deltas.length - l - 1; // 0,1 -> 1,0
+            const layerIndex = layers.length - l - 1; // 0,1 -> 2,1
+			const error = ( 0 == l
+				? nj.subtract( layers[ layerIndex ], labels )
+				: nj.dot( deltas[ deltaIndex + 1 ], this.weights[ l ].T )
+			);
+			const slope = this.nonlin( layers[ layerIndex ], true );
+			deltas[ deltaIndex ] = nj.multiply( error, slope );
+		}
+
+		// update the weights
+
+		for ( let l = 0 ; l < this.weights.length ; l++ ) {
+			const update = nj.dot( layers[l].T, deltas[ l ] );
+			const scaled = nj.lamda( update, v => v * alpha );
+			this.weights[ l ] = nj.subtract( this.weights[ l ], scaled );
+		}
+
+		return layers[ this.shape.length - 1 ];
+	}
+
+	trainGradientDescent( trainingData, alpha = 1, iterations = 1000 * 10 ) {
+		const inputs = nj.array( trainingData.inputs );
+		const labels = nj.array( [trainingData.labels] ).T;
+
+		let t;
+		for ( let i = 0 ; i < iterations ; i++ ) {
+			t = this.gradientDescent( inputs, labels, alpha );
+		}
+		return t;
+	}
+};
