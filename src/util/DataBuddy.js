@@ -11,6 +11,18 @@ class DataBuddy {
 		return { inputs:inputs, labels:labels };
 	}
 
+	static createColumn0TrainingDataJr( count = 10 ) {
+		const inputs = [[0,1], [0,1], [1,0], [1,0]];
+		const labels = inputs.map( r => r[ 0 ] );
+		return { inputs:inputs, labels:labels };
+	}
+
+	static createColumn0C2TrainingData( count = 10 ) {
+		const inputs = [[0,1], [0,1], [1,0], [1,0]];
+		const labels = inputs.map( r => r[ 0 ] );
+		return { inputs:inputs, labels:labels };
+	}
+
 	static createXorTrainingData( count = 10 ) {
 		return {
 			inputs:[[0,0,1], [0,1,1], [1,0,1], [1,1,1]],
@@ -18,30 +30,16 @@ class DataBuddy {
 		};
 	}
 
-	static createDistanceTrainingData( count = 10 ) {
+	static createDistanceTrainingData( count = 10, sort = false ) {
 		const trainingData = { inputs: new Array( count ), labels: new Array( count ) };
 		for ( let i = 0 ; i < count ; i++ ) {
 			const size = Math.random();
 			let actual = 0;
-			const v = new Array( 3 )
-				.fill( 0 )
-				.map( _=> {
-					const x = Math.random() * 2 - 1;
-					actual += Math.pow( x, 2 );
-					return x;
-				})
-				//.sort( (a,b) => a-b )
-				.map( (v,j) => {
-					if ( !j ) {
-						actual = Math.sqrt( actual );
-						if ( actual ) actual = 1;
-					}
-					return v / actual * size;
-				})
-			;
-			trainingData.inputs[ i ] = v;
+			const v = new Array( 3 ).fill( 0 ).map( _=> Math.random() );
+			trainingData.inputs[ i ] = sort ? v.sort( (a,b) => a-b ) : v;
 			trainingData.labels[ i ] = size;
 		}
+		console.log( trainingData.inputs[ 0 ] );
 		return trainingData;
 	}
 
