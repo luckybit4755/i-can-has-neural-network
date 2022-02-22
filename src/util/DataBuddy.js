@@ -1,8 +1,8 @@
 
-module.exports = 
+module.exports =
 class DataBuddy {
 	static createColumn0TrainingData( count = 10 ) {
-		const inputs = new Array( 10 ).fill( 0 ).map( 
+		const inputs = new Array( 10 ).fill( 0 ).map(
 			(r,i) => new Array( 3 ).fill( 0 ).map(
 				(c,j) => j ? Math.random() : i % 2
 			)
@@ -52,4 +52,8 @@ class DataBuddy {
 		});
 		return variance / ( 1 + expected.length );
 	};
+
+	static precision( v, p = 10000 ) {
+		return Array.isArray( v ) ? v.map( v => DataBuddy.precision( v, p ) ) : Math.floor( v * p ) / p;
+	}
 };
