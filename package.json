@@ -22,7 +22,8 @@
 	},
 	"homepage": "https://github.com/luckybit4755/i-can-has-neural-network#readme",
 	"dependencies": {
-		"numjs": "^0.16.1"
+		"numjs": "^0.16.1",
+		"sprintf-js": "^1.1.2"
 	},
 	"devDependencies": {
 		"jest": "^27.4.7"
