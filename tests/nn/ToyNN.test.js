@@ -1,28 +1,34 @@
-#!/usr/bin/env node 
+#!/usr/bin/env node
 
-const nj = require('../../src/util/njeez');
-const ToyNN = require( '../../src/nn/ToyNN' );
-const DataBuddy = require('../../src/util/DataBuddy');
+const nj        = require( '../../src/util/njeez' );
+const ToyNN     = require( '../../src/nn/ToyNN' );
+const DataBuddy = require( '../../src/util/DataBuddy' );
+const sprintf   = require( 'sprintf-js' ).sprintf;
 
 const verifyLabels = ( labels, predictions, threshold = .1, verbose = false ) => {
 	predictions = predictions.selection.data;
-	if ( verbose ) {
-		console.log( 'labels      :', labels );
-		console.log( 'predictions  :', predictions );
-	}
 	expect( labels.length ).toEqual( predictions.length );
+
+	if ( verbose ) {
+		console.log(
+			predictions.map( (prediction,i) => {
+				const label = labels[ i ];
+				const diff = Math.abs( prediction - label );
+				const achtung = diff>threshold ? " <-- achtung!" : "";
+				return sprintf( "%d vs %8.4f -> %8.4f%s", label, prediction, diff, achtung );
+			}).join( '\n' )
+		);
+	}
+
 	predictions.forEach( (prediction,i) => {
 		const label = labels[ i ];
 		const diff = Math.abs( prediction - label );
-		if ( verbose ) {
-			console.log( 'prediction', prediction, 'label', label );
-		}
        	expect( diff ).toBeLessThan( threshold );
 	});
-
 };
 
 test('toynn-column0',()=> {
+for ( let i = 0 ; i<33 ;i++) {
 	const traskColumn0 = new ToyNN( 3, 1 );
 
     const trainingData = DataBuddy.createColumn0TrainingData();
@@ -30,7 +36,8 @@ test('toynn-column0',()=> {
 
     const validationData = DataBuddy.createColumn0TrainingData();
     const predictions = traskColumn0.predict( validationData.inputs );
-	verifyLabels( validationData.labels, predictions, .2 );
+	verifyLabels( validationData.labels, predictions, .1999, !true ); // the results have wild variance :-(
+}
 });
 
 test('toynn-column0-gd',()=> {
@@ -81,10 +88,10 @@ test('toynn-distance',()=> {
 	const validationData = DataBuddy.createDistanceTrainingData( 1000, sort );
 	const predictions = toyDistance.predict( validationData.inputs );
 
-	console.log( 
-		'training    variance is', DataBuddy.variance( trainingResult.selection.data, trainingData.labels ) 
+	console.log(
+		'training    variance is', DataBuddy.variance( trainingResult.selection.data, trainingData.labels )
 		+ '\n' +
-		'predictions variance is', DataBuddy.variance( predictions.selection.data, validationData.labels ) 
+		'predictions variance is', DataBuddy.variance( predictions.selection.data, validationData.labels )
 	);
 
 	toyDistance.weights.forEach( (w,i) => console.log( `w${i} =`, nj.toArray( w.T ) ) );
