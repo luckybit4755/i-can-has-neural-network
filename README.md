@@ -44,3 +44,10 @@ Haven't started this yet: https://github.com/yining1023/machine-learning-for-the
 * https://observablehq.com/@nsthorat/how-to-build-a-teachable-machine-with-tensorflow-js
 * https://developers.google.com/machine-learning/crash-course
 * https://codingvidya.com/best-machine-learning-books/
+* https://www.deeplearning.ai/
+
+## books
+
+idk...
+
+* Read Hands On ML by Aurelien Geron
