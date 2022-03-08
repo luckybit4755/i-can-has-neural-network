@@ -29,7 +29,7 @@ const verifyLabels = ( labels, predictions, threshold = .1, verbose = false ) =>
 
 test('toynn-column0',()=> {
 for ( let i = 0 ; i<33 ;i++) {
-	const traskColumn0 = new ToyNN( 3, 1 );
+	const traskColumn0 = new ToyNN( [3, 1] );
 
     const trainingData = DataBuddy.createColumn0TrainingData();
     const trainingResult = traskColumn0.train( trainingData );
@@ -41,7 +41,7 @@ for ( let i = 0 ; i<33 ;i++) {
 });
 
 test('toynn-column0-gd',()=> {
-	const traskColumn0 = new ToyNN( 2, 1 );
+	const traskColumn0 = new ToyNN( [2, 1] );
 
     const trainingData = DataBuddy.createColumn0C2TrainingData();
     const trainingResult = traskColumn0.trainGradientDescent( trainingData );
@@ -52,7 +52,7 @@ test('toynn-column0-gd',()=> {
 });
 
 test('toynn-xor',()=> {
-	const traskXor = new ToyNN( 3, 4, 1 );
+	const traskXor = new ToyNN( [3, 4, 1] );
 
     const trainingData = DataBuddy.createXorTrainingData();
     const trainingResult = traskXor.train( trainingData );
@@ -63,7 +63,7 @@ test('toynn-xor',()=> {
 });
 
 test('toynn-xor-gd',()=> {
-	const traskXor = new ToyNN( 3, 4, 1 );
+	const traskXor = new ToyNN( [3, 4, 1] );
 
     const trainingData = DataBuddy.createXorTrainingData();
     const trainingResult = traskXor.trainGradientDescent( trainingData );
@@ -73,25 +73,24 @@ test('toynn-xor-gd',()=> {
 	verifyLabels( validationData.labels, predictions );
 });
 
-// this just really doesn't seem to work... perhaps the toy implementation
-// is still too weak...
+// finally mostly working!
 test('toynn-distance',()=> {
-	//const toyDistance = new ToyNN( 3, 3, 1 );
-	const toyDistance = new ToyNN( 3, 1 );
-
 	const sort = true;
-
-	const trainingData = DataBuddy.createDistanceTrainingData( 1000, sort );
-	//const trainingResult = toyDistance.train( trainingData, 1000 * 10 );
-	const trainingResult = toyDistance.trainGradientDescent( trainingData, .33, 1000 );
-
+	const trainingData = DataBuddy.createDistanceTrainingData( 1000 * 10 , sort );
 	const validationData = DataBuddy.createDistanceTrainingData( 1000, sort );
+
+	const toyDistance = new ToyNN( [3, 1], ToyNN.ACTIVATION.relu );
+
+	const learningRate  = .0001;
+	const epochs        = 1000 * 100;
+	const batchSize     = 10;
+	const trainingResult = toyDistance.trainGradientDescent( trainingData, learningRate, epochs, batchSize );
 	const predictions = toyDistance.predict( validationData.inputs );
 
 	console.log(
-		'training    variance is', DataBuddy.variance( trainingResult.selection.data, trainingData.labels )
-		+ '\n' +
-		'predictions variance is', DataBuddy.variance( predictions.selection.data, validationData.labels )
+	'training    variance is', DataBuddy.variance( trainingResult.selection.data, trainingData.labels )
+	+ '\n' +
+	'predictions variance is', DataBuddy.variance( predictions.selection.data, validationData.labels )
 	);
 
 	toyDistance.weights.forEach( (w,i) => console.log( `w${i} =`, nj.toArray( w.T ) ) );
@@ -102,8 +101,6 @@ test('toynn-distance',()=> {
 	const error = nj.mean( nj.abs( nj.subtract( output, labels ) ) );
 	console.log( 'average error is', error );
 
-
-	// this is borked...
-	//verifyLabels( validationData.labels, validation, .3 );
+	verifyLabels( validationData.labels, predictions, .2 );
 });
 
