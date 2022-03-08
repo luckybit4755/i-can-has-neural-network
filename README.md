@@ -42,7 +42,7 @@ Haven't started this yet: https://github.com/yining1023/machine-learning-for-the
 ## other
 
 * https://observablehq.com/@nsthorat/how-to-build-a-teachable-machine-with-tensorflow-js
-* https://developers.google.com/machine-learning/crash-course
+* https://developers.google.com/machine-learning/crash-course <-- this is pretty good
 * https://codingvidya.com/best-machine-learning-books/
 * https://www.deeplearning.ai/
 
@@ -51,3 +51,17 @@ Haven't started this yet: https://github.com/yining1023/machine-learning-for-the
 idk...
 
 * Read Hands On ML by Aurelien Geron
+
+## tensorflow 
+
+* https://www.tensorflow.org/js/tutorials/setup
+
+## etc
+
+* https://gym.openai.com/
+* https://ai-cases.com/
+
+## data
+
+* https://deepai.org/dataset/mnist
+* https://www.cs.toronto.edu/~kriz/cifar.html
