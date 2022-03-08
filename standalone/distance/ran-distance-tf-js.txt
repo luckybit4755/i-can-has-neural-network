@@ -1,0 +1,46 @@
+2022-03-08 14:39:57.748928: I tensorflow/core/platform/cpu_feature_guard.cc:151] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2022-03-08 14:39:57.782588: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:939] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2022-03-08 14:39:57.808565: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:939] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2022-03-08 14:39:57.808741: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:939] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2022-03-08 14:39:58.155615: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:939] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2022-03-08 14:39:58.155778: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:939] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2022-03-08 14:39:58.155903: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:939] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2022-03-08 14:39:58.156036: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1525] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 5793 MB memory:  -> device: 0, name: NVIDIA GeForce RTX 2060 SUPER, pci bus id: 0000:09:00.0, compute capability: 7.5
+Epoch 1 / 10
+
+16325ms 960us/step - loss=0.386 meanSquaredError=0.386 
+Epoch 2 / 10
+
+15283ms 899us/step - loss=0.0351 meanSquaredError=0.0351 
+Epoch 3 / 10
+
+15298ms 900us/step - loss=0.0146 meanSquaredError=0.0146 
+Epoch 4 / 10
+
+15125ms 890us/step - loss=4.45e-3 meanSquaredError=4.45e-3 
+Epoch 5 / 10
+
+15377ms 905us/step - loss=1.33e-3 meanSquaredError=1.33e-3 
+Epoch 6 / 10
+
+15313ms 901us/step - loss=6.04e-4 meanSquaredError=6.04e-4 
+Epoch 7 / 10
+
+14898ms 876us/step - loss=4.87e-4 meanSquaredError=4.87e-4 
+Epoch 8 / 10
+
+15097ms 888us/step - loss=4.71e-4 meanSquaredError=4.71e-4 
+Epoch 9 / 10
+
+15263ms 898us/step - loss=4.71e-4 meanSquaredError=4.71e-4 
+Epoch 10 / 10
+
+15337ms 902us/step - loss=4.69e-4 meanSquaredError=4.69e-4 
+>weight [ 0.27695199847221375, 0.4886389970779419, 0.862724781036377 ]
+>weight [ 0.001783941756002605 ]
+
+
+real	2m34.288s
+user	3m11.251s
+sys	0m11.696s
