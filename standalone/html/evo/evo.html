@@ -34,8 +34,8 @@
 		<canvas width="512" height="512"></canvas>
 		<controls>
 			<div>
-				<span><label>hidden    </label><input size="5" name="hidden"     value="[4]"></input></span>
-				<span><label>mechanism </label><select name="mechanism" useIndex="true"></span>
+				<span><label>hidden</label><input size="5" name="hidden" value="4"></input></span>
+				<span><label>mechanism</label><select name="mechanism" useIndex="true"></span>
 					<option>bottom half</option>
 					<option>right quarter</option>
 					<option>middle circle</option>
@@ -43,8 +43,8 @@
 				</select></span>
 			</div>
 			<div>
-				<span><label>size      </label><input size="5" name="size"       value="128"></input></span>
-				<span><label>count     </label><input size="5" name="nubCount"   value="200"></input></span>
+				<span><label>size</label><input size="5" name="size" value="128"></input></span>
+				<span><label>count</label><input size="5" name="nubCount" value="200"></input></span>
 			</div>
 			<div>
 				<span><label>generation</label><input size="5" name="generation" value="300"></input></span>
@@ -55,7 +55,7 @@
 					<option>20</option>
 				</select></span>
 			</div>
-				<span><label>maxSurvival   </label><input size="5" name="maxSurvival"    value="95"></input></span>
+				<span><label>maxSurvival</label><input size="5" name="maxSurvival" value="95"></input></span>
 				<span><label>maxGenerations</label><input size="5" name="maxGenerations" value="128"></input></span>
 			<div>
 				<span><button name="evo">evo</button></span>
@@ -66,7 +66,10 @@
 		<h2>control guide</h2>
 		<p>
 			<ul>
-				<li>hidden: defines the number and size of the hidden layers, should be in the format: [n]; where n is 1 or more integers</li>
+				<li>
+					hidden: defines the number and size of the hidden layers and
+					should be a list of integers separated by commas, like: 4,3,7
+				</li>
 				<li>mechanism: defines the survival criteria</li>
 				<li>size: size of the board, probably just leave it alone</li>
 				<li>count: number of nubs in each generation</li>
@@ -78,6 +81,10 @@
 			<div>Be sure to hit the "evo" button to make the changes take effect.</div>
 			<div>The biggest thing to play with is the number and shape of the hidden layers!</div>
 			<div>A bigger brain may be better, but it is also takes longer to train...</div>
+		</p>
+		<p>
+			Clicking on the canvas is like tapping on the glass fishtank and will startle the nubs!
+			This can have a short-term effect on their evolution.
 		</p>
 
 		<h2>wat in the wat?</h2>
@@ -149,10 +156,16 @@
 			the simulation keeps going after the threshold
 			with a sort of nub Valhalla where they can frolic
 			as long as you let them live in your browser!
-
-			That said... often the long run dispotion of
+		<p>
+		</p>
+			That said... often the long run disposition of
 			nubs tends to become banal... So maybe death is
 			necessary after all... ☠
+		</p>
+		<p>
+			But then again, if you find your nubs are
+			boring, you can just tap on the glass to send
+			them scurrying!
 		</p>
 		<p>
 			Inspired in large part by 

@@ -7,6 +7,7 @@ class Demo {
 	run() {
 		this.evo = new Evo();
 		this.controller();
+		this.evo.canvas.addEventListener( 'click', () => this.evo.placeNubs() );
 	}
 
 	controller() {
@@ -23,7 +24,7 @@ class Demo {
 		});
 		button.click();
 
-		const recordCanvas = new RecordCanvas();
+		const recordCanvas = new RecordCanvas( this.evo.canvas );
 
 		const record = this.controls.get( 'record' )();
 		record.addEventListener( 'click', () => {
@@ -50,15 +51,14 @@ class Demo {
 				case 'record': 
 				case 'evo': break;
 				case 'hidden':
-					const hidden = JSON.parse( value );
-					if ( !Array.isArray( hidden ) ) {
-						errors.push( `hidden must be an array, not ${tmp}` );
-						continue;
-					}
+					const hidden = value
+						.replace( /[^0-9]+/g, ' ' ).replace( /\s\s*/, ' ' ).trim()
+						.split( ' ' ).map( v => parseInt( v.trim() ) );
 					if ( hidden.length != hidden.filter( n=> n === parseInt( n ) ).length ) {
-						errors.push( `hidden must be an array of integers, not ${tmp}` );
+						errors.push( `hidden must be a off integers, not ${tmp}` );
 						continue;
 					}
+					console.log( 'hidden is', hidden );
 					value = hidden;
 					break;
 				default:
