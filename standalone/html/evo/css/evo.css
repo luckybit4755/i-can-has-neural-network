@@ -1,0 +1,23 @@
+body { 
+	color:#ccb; 
+	background:black; 
+	font-family: sans-serif; 
+	margin:.5em; 
+}
+
+a { 
+	color:#aad; 
+	text-decoration:none; 
+}
+
+span, label { 
+	display:inline-block; 
+}
+
+span { 
+	width:255px; 
+}
+
+label { 
+	width:7em; 
+}
