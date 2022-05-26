@@ -14,7 +14,7 @@ class Evo {
 		size = 128, 
 		nubCount = 200, 
 		generation = 300, 
-		mechanism = 0, 
+		mechanism = 2, 
 		iterationsPerFrame = 10,
 		maxSurvival = 95,
 		maxGenerations = 128
@@ -47,6 +47,7 @@ class Evo {
 
 		this.iteration = 0;
 		this.paused = 0;
+		this.done = false;
 
 		this.lastSurviverCount = 0;
 		this.sarnathCounter = 0;
@@ -76,16 +77,14 @@ class Evo {
 		if ( this.paused-- > 0 ) {
 			return this.nextFrame();
 		}
-		if ( this.iteration > this.maxGenerations * this.generation ) {
-			return;
-		}
 
 		this.clear();
 		this.drawMechanism();
 
-		const done = this.move();
+		this.move();
 
-		if ( done ) {
+		if ( false && this.done  ) {
+			// TODO: do this once...
 			this.finalAnalyse();
 		} else {
 			this.drawGraph();
@@ -95,9 +94,13 @@ class Evo {
 	}
 
 	move() {
-		let done = false;
-		for ( let b = 0 ; b < this.iterationsPerFrame && !done ; b++ ) {
-			this.iteration++;
+		for ( let b = 0 ; b < this.iterationsPerFrame ; b++ ) {
+			if ( !this.done ) {
+				this.iteration++;
+				if ( ++this.iteration > this.maxGenerations * this.generation ) {
+					this.done = true;
+				}
+			}
 
 			this.nubs.forEach( (nub,i) => {
 				nub.move( this );
@@ -107,13 +110,12 @@ class Evo {
 				}
 			});
 
-			if ( 0 == this.iteration % this.generation ) {
+			if ( !this.done && 0 == this.iteration % this.generation ) {
 				const survived = this.sarnath();
 				this.paused = this.fps;
-				done = ( 0 == survived ) || ( survived >= this.maxSurvival );
+				this.done = ( 0 == survived ) || ( survived >= this.maxSurvival );
 			}
 		}
-		return done;
 	}
 
 	sarnath() {
@@ -123,6 +125,7 @@ class Evo {
 
 		if ( winners.length < 2 ) {
 			// what did you do to all the lovely nubblies?
+			this.done = true;
 			return 0;
 		}
 
@@ -132,6 +135,7 @@ class Evo {
 
 		// bit hacky... don't spawn if we are done...
 		if ( percent >= this.maxSurvival ) {
+			this.done = true;
 			return percent;
 		}
 
@@ -230,7 +234,7 @@ class Evo {
 
 		this.context.fillStyle = 'red';
 		const s = `${this.lastSurviverCount} of ${this.nubCount} survived`;
-		this.context.fillText( s, this.w * .33, this.h * .77 );
+		this.context.fillText( s, this.w * .30, this.h * .88 );
 	}
 
 	drawNub( nub ) {

@@ -6,8 +6,6 @@
 class Demo {
 	run() {
 		this.evo = new Evo();
-		this.evo.configure();
-		this.evo.run();
 		this.controller();
 	}
 
@@ -24,6 +22,21 @@ class Demo {
 			}
 		});
 		button.click();
+
+		const recordCanvas = new RecordCanvas();
+
+		const record = this.controls.get( 'record' )();
+		record.addEventListener( 'click', () => {
+			if ( record.recording ) {
+				recordCanvas.stop();
+				record.recording = false;
+				record.textContent = 'record video';
+			} else {
+				recordCanvas.start();
+				record.recording = true;
+				record.textContent = 'stop recording';
+			}
+		});
 	} 
 
 	click() {
@@ -34,6 +47,7 @@ class Demo {
 		for ( const [key,get] of this.controls ) {
 			let value = get();
 			switch ( key ) {
+				case 'record': 
 				case 'evo': break;
 				case 'hidden':
 					const hidden = JSON.parse( value );

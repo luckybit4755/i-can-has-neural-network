@@ -15,6 +15,9 @@ class Nub {
 
 		this.createBrain( hiddenCount );
 
+		// FIXME: this does not result in similar colors for 
+		// nubs which *seem* to have similar behaviour
+		// it may be necessary to actual track ancestors...
 		this.color = this.fingerprint();
 	}
 

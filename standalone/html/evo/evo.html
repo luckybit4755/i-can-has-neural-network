@@ -6,10 +6,11 @@
 
 		<TITLE>evo: nubs can live!</TITLE>
 
-		<script type="text/javascript" src="js/Demo.js"/>
-		<script type="text/javascript" src="js/Evo.js"/>
-		<script type="text/javascript" src="js/Nub.js"/>
-		<script type="text/javascript" src="js/Util.js"/>
+		<script type="text/javascript" src="js/Demo.js"></script>
+		<script type="text/javascript" src="js/Evo.js"></script>
+		<script type="text/javascript" src="js/Nub.js"></script>
+		<script type="text/javascript" src="js/Util.js"></script>
+		<script type="text/javascript" src="js/RecordCanvas.js"></script>
 
 		<script type="text/javascript">
 			window.addEventListener( 'load', () => new Demo().run() );
@@ -33,9 +34,9 @@
 			<div>
 				<span><label>hidden    </label><input size="5" name="hidden"     value="[4]"></input></span>
 				<span><label>mechanism </label><select name="mechanism" useIndex="true"></span>
-					<option>middle circle</option>
 					<option>bottom half</option>
 					<option>right quarter</option>
+					<option>middle circle</option>
 					<option>xxx</option>
 				</select></span>
 			</div>
@@ -56,6 +57,7 @@
 				<span><label>maxGenerations</label><input size="5" name="maxGenerations" value="128"></input></span>
 			<div>
 				<span><button name="evo">evo</button></span>
+				<span><button name="record">record video</button></span>
 			</div>
 		</controls>
 
@@ -138,9 +140,23 @@
 			jumping like insects or crawling like worms!
 		</p>
 		<p>
+			Is it cruel? It feels that way a bit... even
+			if they are simple virtual creatures, they seem
+			to be alive in some sense so killing them feels
+			wrong even if it does mirror nature. As a result,
+			the simulation keeps going after the threshold
+			with a sort of nub Valhalla where they can frolic
+			as long as you let them live in your browser!
+
+			That said... often the long run dispotion of
+			nubs tends to become banal... So maybe death is
+			necessary after all... ☠
+		</p>
+		<p>
 			Inspired in large part by 
 			<a href="https://www.youtube.com/user/davidrandallmiller">davidrandallmiller</a>'s
 			<a href="https://www.youtube.com/watch?v=N3tRFayqVtk">video</a>
 		</p>
+		<p>
 	</BODY>
 </HTML>
