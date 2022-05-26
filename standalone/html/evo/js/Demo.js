@@ -58,7 +58,6 @@ class Demo {
 						errors.push( `hidden must be a off integers, not ${tmp}` );
 						continue;
 					}
-					console.log( 'hidden is', hidden );
 					value = hidden;
 					break;
 				default:
