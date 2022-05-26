@@ -5,7 +5,7 @@
  *
  */
 class Nub {
-	static INPUT_SOURCE_COUNT = 14;
+	static INPUT_SOURCE_COUNT = 15;
 	static OUTPUT_COUNT = 8 + 1; // compass rose
 
 	constructor( hiddenCount = null ) {
@@ -85,7 +85,7 @@ class Nub {
 
 	// i should be > 0 and <= INPUT_SOURCE_COUNT 
 	input( i, board, generation ) {
-		const now = new Date().getTime() * this.clock * .0022;
+		const now = new Date().getTime() * .0022;
 
 		if ( i < Util.OFFSETS.length ) {
 			// look in 8 directions
@@ -95,11 +95,12 @@ class Nub {
 				case 0: return Util.toPM( this.position[ 0 ] / board.length );
 				case 1: return Util.toPM( this.position[ 1 ] / board.length );
 				case 2: return Util.r1();
-				case 3: return Math.cos( now ); 
-				case 4: return Util.toPM( this.age / generation );
-				case 5: return this.couldMove ? 1 : -1;
+				case 3: return Math.cos( now * this.clock ); 
+				case 4: return Math.sin( now * .25 ); 
+				case 5: return Util.toPM( this.age % generation / generation );
+				case 6: return this.couldMove ? 1 : -1;
 			}
-		}
+		} // so 8 + max(case) + 1 => INPUT_SOURCE_COUNT value... 
 	}
 
 	/////////////////////////////////////////////////////////////////////////////
@@ -174,22 +175,17 @@ class Nub {
 		this.updatePosition( board, impulse );
 	}
 
+	// there are a lot of fun ideas to play with here...
 	impulse() {
-		const impulse = this.impulse2();
-
-		impulse.forEach( (v,i) => impulse[ i ] = Math.floor( Math.max( -1, Math.min( 1, v ) ) ) );
-		//impulse.forEach( (v,i) => impulse[ i ] = Math.max( -1, Math.min( 1, v ) ) );
+		const impulse = this.impulse1();
+		//impulse.forEach( (v,i) => impulse[ i ] = Math.round( Math.tanh( v ) ) );
+		//impulse.forEach( (v,i) => impulse[ i ] = Math.floor( Math.max( -1, Math.min( 1, v ) ) ) );
+		impulse.forEach( (v,i) => impulse[ i ] = Math.max( -1, Math.min( 1, v ) ) );
 		return impulse;
 	}
 
-	impulse0() {
-		return this.outputs.reduce( (impulse,v,i) => {
-			return ( v > 0 && v < Math.random() ) // if positive, might fire
-			? impulse 
-			: Util.arrayAdd( impulse, Util.OFFSETS[ i ] )
-		} , [0,0]);
-	}
-
+	// same as impulse0 but more legible
+	// positive outputs have chance to fire and contribute to the impulse
 	impulse1() {
 		const impulse = [0,0];
 		Util.OFFSETS.forEach( (offset,i) => {
@@ -203,6 +199,8 @@ class Nub {
 		return impulse;
 	}
 
+	// just use the raw output value to scale the impulse
+	// works pretty well
 	impulse2() {
 		const impulse = [0,0];
 		Util.OFFSETS.forEach( (offset,i) => {
@@ -212,7 +210,20 @@ class Nub {
 		});
 		return impulse;
 	}
-		
+
+	impulse3() {
+		let impulse = null;
+		let max = -33;
+		Util.OFFSETS.forEach( (offset,i) => {
+			const activation = this.outputs[ i ];
+			if ( activation > 0 && activation > max ) {
+				max = activation;
+				impulse = offset;
+			}
+		});
+		return impulse ? impulse : [0,0];
+	}
+
 	updatePosition( board, impulse ) {
 		const position = Util.arrayAdd( this.position, impulse );
 		this.boardSet( board, this.position, null );
