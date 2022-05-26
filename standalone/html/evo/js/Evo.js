@@ -66,7 +66,6 @@ class Evo {
 	}
 
 	placeNubs() {
-console.log( 'wiggle it just a little bit!' );
 		this.board = new Array( this.size ).fill( this.size ).map( _=> new Array( this.size ).fill( false ) );
 		this.nubs.forEach( nub=> {
 			while( true ) {
@@ -88,7 +87,6 @@ console.log( 'wiggle it just a little bit!' );
 
 		this.sarnathCounter--;
 		if ( 1 > this.sarnathCounter && this.winners ) {
-console.log('huh?');
 			this.spawn( this.winners );
 			this.winners = null;
 		}
@@ -175,7 +173,6 @@ console.log('huh?');
 
 		this.nubs = nextGeneration;
 		this.placeNubs();
-		console.log( 'spawned right?' );
 	}
 
 	/////////////////////////////////////////////////////////////////////////////
