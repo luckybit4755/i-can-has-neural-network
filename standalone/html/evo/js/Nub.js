@@ -296,18 +296,18 @@ class Nub {
 		let hash = 0;
 
 		[this.layers,this.biases,this.memory].forEach( thing => 
-			thing.forEach( stuff => stuff.forEach( v => hash = this._hash( hash, v ) ) )
+			thing.forEach( stuff => stuff.forEach( v => hash = this.hash( hash, v ) ) )
 		);
 
 		this.weights.forEach( (thisWeight,i) => {
-			thisWeight.forEach( row => row.forEach( v => hash = this._hash( hash, v ) ) )
+			thisWeight.forEach( row => row.forEach( v => hash = this.hash( hash, v ) ) )
 		});
 
 		hash = ( hash & hash ) % Math.pow( 2, 24 );
 		return `rgb(${hash>>16&255},${hash>>8&255},${hash&255})`;
 	}
 
-	_hash( hash, v ) {
+	hash( hash, v ) {
 		const n = 2;
 		v = Math.floor( v * n ) + n;
 		hash = ((hash<<2)-hash) + v;
