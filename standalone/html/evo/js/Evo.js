@@ -5,6 +5,15 @@
  *
  */
 class Evo {
+	constructor( canvas = null ) {
+		this.canvas = canvas || document.getElementsByTagName( 'canvas' )[ 0 ];
+		this.context = this.canvas.getContext( '2d' );
+		this.context.font = '22px Comic-Sans';
+
+		this.w = parseInt( this.canvas.width );
+		this.h = parseInt( this.canvas.height );
+	}
+
 	// 0> 4:43, 7:90, 5,4,6:107
 	// 0> 3:74, 4:47, 7:51, 5,4,6:80  (bias and memory from here)
 	// 1> 3:36, 4:48, 7:70, 5,4,6:96  
@@ -29,29 +38,27 @@ class Evo {
 		this.maxSurvival = maxSurvival;
 		this.maxGenerations = maxGenerations;
 
+		this.scale = parseInt( this.w ) / this.size;
+
 		// how long the trail for a nub should be
-		// longer is more snake and shorter is more butterfly
+		// longer is more snake and shorter is more 
+		// birds or butterfly
 		this.trail = 4; 
 
 		this.fps = 22
 
 		this.survivalCounts = [];
 
-		this.canvas = document.getElementsByTagName( 'canvas' )[ 0 ];
-		this.context = this.canvas.getContext( '2d' );
-		this.context.font = '22px Comic-Sans'
+		this.done = false; // and with strange aeons ...
+		this.summarized = false; 
 
-		this.w = parseInt( this.canvas.width );
-		this.h = parseInt( this.canvas.height );
-		this.scale = parseInt( this.w ) / this.size;
-
-		this.iteration = 0;
-		this.paused = 0;
-		this.done = false;
-
+		// everyone loves counters!
 		this.lastSurviverCount = 0;
 		this.sarnathCounter = 0;
+		this.iteration = 0;
+		this.paused = 0;
 
+		// here they are!
 		this.nubs = new Array( this.nubCount ).fill( 0 ).map( _=>new Nub( hidden ) );
 		this.placeNubs();
 
@@ -59,6 +66,7 @@ class Evo {
 	}
 
 	placeNubs() {
+console.log( 'wiggle it just a little bit!' );
 		this.board = new Array( this.size ).fill( this.size ).map( _=> new Array( this.size ).fill( false ) );
 		this.nubs.forEach( nub=> {
 			while( true ) {
@@ -78,13 +86,20 @@ class Evo {
 			return this.nextFrame();
 		}
 
+		this.sarnathCounter--;
+		if ( 1 > this.sarnathCounter && this.winners ) {
+console.log('huh?');
+			this.spawn( this.winners );
+			this.winners = null;
+		}
+
 		this.clear();
 		this.drawMechanism();
 
 		this.move();
 
-		if ( false && this.done  ) {
-			// TODO: do this once...
+		if ( this.done && !this.summarized ) {
+			this.summarized = true;
 			this.finalAnalyse();
 		} else {
 			this.drawGraph();
@@ -94,23 +109,25 @@ class Evo {
 	}
 
 	move() {
-		for ( let b = 0 ; b < this.iterationsPerFrame ; b++ ) {
+		for ( let t = 0 ; t < this.iterationsPerFrame ; t++ ) {
 			if ( !this.done ) {
+				// no more counting...
 				this.iteration++;
 				if ( ++this.iteration > this.maxGenerations * this.generation ) {
 					this.done = true;
 				}
 			}
 
-			this.nubs.forEach( (nub,i) => {
+			this.nubs.forEach( nub => {
 				nub.move( this );
 				// pretty busy but sort of fun... 
-				if ( b > this.iterationsPerFrame - this.trail ) {
+				if ( t > this.iterationsPerFrame - this.trail ) {
 					this.drawNub( nub );
 				}
 			});
 
 			if ( !this.done && 0 == this.iteration % this.generation ) {
+				// no more death :-) ... or birth :-/
 				const survived = this.sarnath();
 				this.paused = this.fps;
 				this.done = ( 0 == survived ) || ( survived >= this.maxSurvival );
@@ -121,7 +138,7 @@ class Evo {
 	sarnath() {
 		const winners = this.nubs.filter( nub => this.survived( nub ) );
 		this.lastSurviverCount = winners.length;
-		this.sarnathCounter = this.generation / this.iterationsPerFrame * .44;
+		this.sarnathCounter = this.generation / this.iterationsPerFrame * .33 + 3;
 
 		if ( winners.length < 2 ) {
 			// what did you do to all the lovely nubblies?
@@ -139,16 +156,26 @@ class Evo {
 			return percent;
 		}
 
+		// delay spawing until sarnathCounter is zero
+		// mark everyone as dead (sad!) and revive the winners
+
+		this.nubs.forEach( nub=>nub.dead = true );
+		winners.forEach( winner=>winner.dead = false );
+		this.winners = winners;
+
+		return percent;
+	}
+
+	spawn( winners ) {
 		const nextGeneration = new Array( this.nubCount ).fill( 0 ).map( _=> {
 			const mom = winners[ Math.floor( Math.random() * winners.length ) ];
 			const dad = winners[ Math.floor( Math.random() * winners.length ) ];
-			return dad.rut( mom );
+			return dad.rut( mom ); // :-D
 		});
 
 		this.nubs = nextGeneration;
 		this.placeNubs();
-
-		return percent;
+		console.log( 'spawned right?' );
 	}
 
 	/////////////////////////////////////////////////////////////////////////////
@@ -230,7 +257,7 @@ class Evo {
 		this.context.fillStyle = 'black';
 		this.context.fillText( m, 22, 22 );
 
-		if ( this.sarnathCounter-- < 0 ) return;
+		if ( this.sarnathCounter < 0 ) return;
 
 		this.context.fillStyle = 'red';
 		const s = `${this.lastSurviverCount} of ${this.nubCount} survived`;
@@ -243,7 +270,9 @@ class Evo {
 		const x = c * this.scale;
 		const y = r * this.scale;
 
-		this.context.fillStyle = nub.color;
+		this.context.fillStyle = nub.dead 
+			? ( Util.r1() < 0 ? 'lightgray' : 'gray' )
+			: nub.color;
 		this.fillRect( x, y, this.scale, this.scale );
 	}
 
