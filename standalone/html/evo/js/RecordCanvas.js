@@ -3,20 +3,7 @@ class RecordCanvas {
 	constructor( canvas = document.getElementsByTagName( 'canvas' )[ 0 ], video = null ) {
 		this.canvas = canvas;
 		this.video = video || this.createVideo();
-
 		this.mediaSource = new MediaSource();
-		this.mediaSource.addEventListener( 'sourceopen', (event) => {
-			//this.sourceBuffer = mediaSource.addSourceBuffer('video/webm; codecs="vp8"');	
-			this.sourceBuffer = mediaSource.addSourceBuffer( 'video/mp4' )
-		}, false );
-
-
-				
-/*
-		let mediaRecorder;
-		let recordedBlobs;
-		let sourceBuffer;
-*/
 	}
 
 	createVideo() {
@@ -31,17 +18,23 @@ class RecordCanvas {
 		const stream = this.canvas.captureStream();
 
 		this.mediaRecorder = null;
+		
+		const errors = [];
 		let type = null;
-		'video/mp4/ video/webm video/webm,codecs=vp9 video/vp8'.split( ' ' ).forEach( t => {
-			if ( this.mediaRecorder )return;
+		'video/mp4 video/webm video/webm,codecs=vp9 video/vp8'.split( ' ' ).forEach( t => {
+			if ( this.mediaRecorder ) return;
+
 			type = t;
 			try {
-			this.mediaRecorder = new MediaRecorder( stream, {mimeType:type} );
+				this.mediaRecorder = new MediaRecorder( stream, {mimeType:type} );
+				console.log( `using ${type}` );
+				this.extension = type.replace( /,.*/, '' ).replace( /\/.*/, '' );
 			} catch ( e ) {
+				errors.push( e );
 			}
 		});
 		if ( !this.mediaRecorder ) {
-			throw new Error( 'oops' );
+			throw new Error( 'oops:' + errors.join( '\n' ) );
 		}
 
 
@@ -63,18 +56,18 @@ class RecordCanvas {
 	}
 
 	download( blob ) {
-		const url = window.URL.createObjectURL(blob);
+		const url = window.URL.createObjectURL( blob );
 
-		const a = document.createElement('a');
+		const a = document.createElement( 'a' );
 		a.style.display = 'none';
 		a.href = url;
-		a.download = `nub-${ new Date().getTime() }.mp4`;
-		document.body.appendChild(a);
+		a.download = `nub-${ new Date().getTime() }.${ this.extension }`;
+		document.body.appendChild( a );
 
 		a.click();
 		setTimeout(() => {
-			document.body.removeChild(a);
-			window.URL.revokeObjectURL(url);
+			document.body.removeChild( a );
+			window.URL.revokeObjectURL( url );
 		}, 100);
 	}
 }
