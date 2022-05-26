@@ -1,0 +1,146 @@
+<!DOCTYPE html PUBLIC"-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<HTML xmlns="http://www.w3.org/1999/xhtml">
+	<HEAD>
+		<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+		<meta content="utf-8" http-equiv="encoding">
+
+		<TITLE>evo: nubs can live!</TITLE>
+
+		<script type="text/javascript" src="js/Demo.js"/>
+		<script type="text/javascript" src="js/Evo.js"/>
+		<script type="text/javascript" src="js/Nub.js"/>
+		<script type="text/javascript" src="js/Util.js"/>
+
+		<script type="text/javascript">
+			window.addEventListener( 'load', () => new Demo().run() );
+		</script>
+
+		<style>
+			body   { color:#ccb; background:black; font-family: sans-serif; margin:.5em; }
+			pre    { color:#8c8; }  
+			a      { color:#aad; text-decoration:none; }
+
+			span, label { display:inline-block; }
+			span   { width:255px; }
+			label  { width:7em; }
+		</style>
+	</HEAD>
+	<BODY>
+		<h2>evo: nubs can live!</h2>
+
+		<canvas width="512" height="512"></canvas>
+		<controls>
+			<div>
+				<span><label>hidden    </label><input size="5" name="hidden"     value="[4]"></input></span>
+				<span><label>mechanism </label><select name="mechanism" useIndex="true"></span>
+					<option>middle circle</option>
+					<option>bottom half</option>
+					<option>right quarter</option>
+					<option>xxx</option>
+				</select></span>
+			</div>
+			<div>
+				<span><label>size      </label><input size="5" name="size"       value="128"></input></span>
+				<span><label>count     </label><input size="5" name="nubCount"   value="200"></input></span>
+			</div>
+			<div>
+				<span><label>generation</label><input size="5" name="generation" value="300"></input></span>
+				<span><label>perFrame</label><select name="iterationsPerFrame">
+					<option>1</option>
+					<option>4</option>
+					<option selected="lul">10</option>
+					<option>20</option>
+				</select></span>
+			</div>
+				<span><label>maxSurvival   </label><input size="5" name="maxSurvival"    value="95"></input></span>
+				<span><label>maxGenerations</label><input size="5" name="maxGenerations" value="128"></input></span>
+			<div>
+				<span><button name="evo">evo</button></span>
+			</div>
+		</controls>
+
+		<h2>control guide</h2>
+		<p>
+			<ul>
+				<li>hidden: defines the number and size of the hidden layers, should be in the format: [n]; where n is 1 or more integers</li>
+				<li>mechanism: defines the survival criteria</li>
+				<li>size: size of the board, probably just leave it alone</li>
+				<li>count: number of nubs in each generation</li>
+				<li>generation: how many turns does each generation live</li>
+				<li>perFrame: controls how fast the simulation runs vs the display, higher is faster</li>
+				<li>maxSurvival: cut-off point at which the simulation halts</li>
+				<li>maxGenerations: maximum number of generation before halting the simulatinon</li>
+			</ul>
+			<div>Be sure to hit the "evo" button to make the changes take effect.</div>
+			<div>The biggest thing to play with is the number and shape of the hidden layers!</div>
+			<div>A bigger brain may be better, but it is also takes longer to train...</div>
+		</p>
+
+		<h2>wat in the wat?</h2>
+		<p>
+			A fair question!
+		</p>
+		<p>
+			What's going on here? The short answer is the real-time evolution of primitive brains in your browser.
+		</p>
+		<p>
+			Each "nub" in the population has a neural network in the classic full mesh configuration with some quirks.
+			Each node in all the layers (including the input and output layers) have recurrent bit to potentially keep part of their last state:
+		</p>
+		<p>
+			<img src="images/wnn.png" width="40%"/>
+		</p>
+		<p>
+			Here's how the simuation works:
+			<ol>
+				<li>every weight in each nub's brain is given a random value</li>
+				<li>a number of iterations are run (see below) until the generation is over</li>
+				<li>a fitness criteria is used to pick survivers, typically being in a "safe" area of the screen</li>
+				<li>the survivers are used to create the next generation of nubs (see below)</li>
+				<li>the process continues until either the maximum number of generations or survival percentage is achieved</li>
+			</ol>
+		</p>
+		<p>
+			Each iterations proceeds as follows:
+			<ol>
+				<li>each nub's input layer is set based on conditions in the environment (see below)</li>
+				<li>forward propagation occurse by performing matrix multiplication throughout the layers</li>
+				<li>the output layer decides which of the 8 compass directions to move</li>
+			</ol>
+		</p>
+		<p>
+			Each generations is created from the "survivors" from the previous generation like so:
+			<ol>
+				<li>each generation has the same <b>count</b> of nubs</li>
+				<li>for each new nub, 2 random parents are picked</li>
+				<li>the new nub's values for every weight, bias, layer and setting is determined by:
+					<ol>
+						<li>random value (based on mutation chance)</li>
+						<li>50% parent A value</li>
+						<li>50% parent B value</li>
+					</ol>
+				</li>
+			</ol>
+			The hope is that the survivors will pass on
+			the mental characteristics to their offspring
+			allowing them a better shot at survival
+		</p>
+
+		<h2>Is this real?</h2>
+		<p>
+			As crazy as it may seem this little demo is small
+			evolutionary model based on randomly initialized
+			neural networks which struggle and adapt their
+			behaviour for survival.
+		</p>
+		<p>
+			You may see flocking behavior like birds,
+			jumping like insects or crawling like worms!
+		</p>
+		<p>
+			Inspired in large part by 
+			<a href="https://www.youtube.com/user/davidrandallmiller">davidrandallmiller</a>'s
+			<a href="https://www.youtube.com/watch?v=N3tRFayqVtk">video</a>
+		</p>
+	</BODY>
+</HTML>
