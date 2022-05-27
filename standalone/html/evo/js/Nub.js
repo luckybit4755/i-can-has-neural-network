@@ -64,7 +64,7 @@ class Nub {
 		const generation = evo.generation;
 
 		this.initializeInputs( board, generation );
-		this.forwardPropagation();
+		this.forwardPropagation( evo.nanCheck );
 		this.react( board );
 
 		this.age++;
@@ -104,8 +104,8 @@ class Nub {
 	}
 
 	/////////////////////////////////////////////////////////////////////////////
-			
-	forwardPropagation() {
+		
+	forwardPropagation( nanCheck = false ) {
 		this.weights.forEach( (weight,i) => {
 			const prior = this.layers[ i ];
 			const next = this.layers[ i + 1 ];
@@ -116,7 +116,7 @@ class Nub {
 				next[ j ] = Math.tanh( v * k + b );
 			});
 
-			this.multiply( prior, weight, next );
+			this.multiply( prior, weight, next, nanCheck );
 			next.forEach( (v,j) => next[ j ] = Math.tanh( v ) );
 		});
 
@@ -128,27 +128,25 @@ class Nub {
 	// adapted from https://www.tutorialspoint.com/algorithm-for-matrix-multiplication-in-javascript
 	// this is wack cuz layers are not like [ [1],[2] ], just [1,2] ...
 	// as a result, it is *not* suitable for general matrix multiplication
-	multiply( prior, weight, next ) {
-		const priorRows = 1;
+	multiply( prior, weight, next, nanCheck = false ) {
 		const priorCols = prior.length;
-
 		const weightRows = weight.length;
 		const weightCols = weight[ 0 ].length;
 
-		if ( priorCols != weightRows || weightCols != next.length ) {
-			const message = `size error: ${priorRows}x${priorCols} * ${weightRows}x${weightCols} -> ${priorRows}x${weightCols} vs 1 x ${next.length}`;
-			throw new Error( message );
+		if ( nanCheck ) {
+			// ok... bit hokey to reuse the same flag, but whatever...
+			if ( priorCols != weightRows || weightCols != next.length ) {
+				const message = `size error: 1x${priorCols} * ${weightRows}x${weightCols} -> 1x${weightCols} vs 1 x ${next.length}`;
+				throw new Error( message );
+			}
 		}
 
-		for (let r = 0; r < priorRows; ++r) {
-			for (let c = 0; c < weightCols; ++c) {
-				for (let k = 0; k < priorCols; ++k) {
-					//m[r][c] += prior[r][k] * weight[k][c];
-					next[c] += prior[k] * weight[k][c];
-					if ( isNaN( next[ c ] ) ) {
-						const message = `NaN: next[${c}] = ${next[c]} = prior[${k}] * weight[${k}][${c}] = ${prior[k]} * ${weight[k][c]};`;
-						throw new Error( message );
-					}
+		for ( let c = 0; c < weightCols; ++c ) {
+			for ( let k = 0; k < priorCols; ++k ) {
+				next[ c ] += prior[ k ] * weight[ k ][ c ];
+				if ( nanCheck && isNaN( next[ c ] ) ) {
+					const message = `NaN: next[${c}] = ${next[c]} = prior[${k}] * weight[${k}][${c}] = ${prior[k]} * ${weight[k][c]};`;
+					throw new Error( message );
 				}
 			}
 		}
@@ -177,10 +175,7 @@ class Nub {
 
 	// there are a lot of fun ideas to play with here...
 	impulse() {
-		const impulse = this.impulse1();
-		//impulse.forEach( (v,i) => impulse[ i ] = Math.round( Math.tanh( v ) ) );
-		//impulse.forEach( (v,i) => impulse[ i ] = Math.floor( Math.max( -1, Math.min( 1, v ) ) ) );
-		impulse.forEach( (v,i) => impulse[ i ] = Math.max( -1, Math.min( 1, v ) ) );
+		const impulse = this.impulse2();
 		return impulse;
 	}
 
@@ -196,7 +191,7 @@ class Nub {
 			impulse[0] += offset[0];
 			impulse[1] += offset[1];
 		});
-		return impulse;
+		return Util.pmMinMax( impulse )
 	}
 
 	// just use the raw output value to scale the impulse
@@ -208,9 +203,10 @@ class Nub {
 			impulse[0] += offset[0] * activation;
 			impulse[1] += offset[1] * activation;
 		});
-		return impulse;
+		return Util.pmTanh( impulse )
 	}
 
+	// pick positive max
 	impulse3() {
 		let impulse = null;
 		let max = -33;
@@ -233,7 +229,7 @@ class Nub {
 
 	/////////////////////////////////////////////////////////////////////////////
 
-	rut( that, mutationRate = 1 / 100 ) {
+	rut( that, mutationRate = 1 / 1000 ) {
 		const kid = new Nub( this.hiddenCount );
 
 		kid.clock = this.dnaValue( kid.clock, this.clock, that.clock );
@@ -258,14 +254,14 @@ class Nub {
 
 	dna( kid, dad, mom, mutationRate ) {
 		kid.forEach( (v,j) => {
-			kid[ j ] = this.dnaValue( v, mom[ j ], dad[ j ] )
+			kid[ j ] = this.dnaValue( v, mom[ j ], dad[ j ] );
 		});
 	}
 
 	// maybe this could be improved to split each float
 	// into bits, then do the picks and merge the result...
 	dnaValue( kid, dad, mom, mutationRate ) {
-		return ( Math.random() < mutationRate ) ? v
+		return ( Math.random() < mutationRate ) ? kid
 			: Math.random() < .5 ? mom : dad;
 	}
 
