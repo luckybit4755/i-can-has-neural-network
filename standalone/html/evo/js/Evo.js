@@ -4,14 +4,9 @@
  * Probably shoudl separate it out at some point.
  *
  */
-class Evo {
+class Evo extends Drawing {
 	constructor( canvas = null ) {
-		this.canvas = canvas || document.getElementsByTagName( 'canvas' )[ 0 ];
-		this.context = this.canvas.getContext( '2d' );
-		this.context.font = '22px Comic-Sans';
-
-		this.w = parseInt( this.canvas.width );
-		this.h = parseInt( this.canvas.height );
+		super( canvas );
 	}
 
 	// 0> 4:43, 7:90, 5,4,6:107
@@ -26,7 +21,8 @@ class Evo {
 		mechanism = 2, 
 		iterationsPerFrame = 10,
 		maxSurvival = 95,
-		maxGenerations = 128
+		maxGenerations = 128,
+		mutationRate = 1 / 1000
 	) {
 		this.size = size;
 		this.nubCount = nubCount;
@@ -38,6 +34,8 @@ class Evo {
 		this.maxSurvival = maxSurvival;
 		this.maxGenerations = maxGenerations;
 
+		this.mutationRate = mutationRate;
+
 		this.scale = parseInt( this.w ) / this.size;
 
 		// how long the trail for a nub should be
@@ -45,7 +43,7 @@ class Evo {
 		// birds or butterfly
 		this.trail = 4; 
 
-		this.fps = 22
+		this.fps = 44;
 
 		this.survivalCounts = [];
 
@@ -81,56 +79,110 @@ class Evo {
 	}
 
 	run() {
+		this.sarnathCounter--;
+		this.paused--;
+
 		if ( this.paused-- > 0 ) {
 			return this.nextFrame();
 		}
 
-		this.sarnathCounter--;
-		if ( 1 > this.sarnathCounter && this.winners ) {
+		if ( this.winners ) {
 			this.spawn( this.winners );
 			this.winners = null;
 		}
 
 		this.clear();
 		this.drawMechanism();
-
+		
 		this.move();
 
 		if ( this.done && !this.summarized ) {
 			this.summarized = true;
 			this.finalAnalyse();
 		} else {
-			this.drawGraph();
-			this.drawLegend();
-			this.nextFrame();
+			this.drawGraph( this.survivalCounts, this.done );
+			this.drawLegend( this.iteration, this.generation, this.survivalCounts, this.nubs.length, this.sarnathCounter );
 		}
+
+		this.nextFrame();
 	}
 
-	move() {
+	move( drawing = true ) {
 		for ( let t = 0 ; t < this.iterationsPerFrame ; t++ ) {
-			if ( !this.done ) {
-				// no more counting...
-				this.iteration++;
-				if ( ++this.iteration > this.maxGenerations * this.generation ) {
-					this.done = true;
-				}
-			}
+			this.incrementIteration();
 
 			this.nubs.forEach( nub => {
 				nub.move( this );
-				// pretty busy but sort of fun... 
-				if ( t > this.iterationsPerFrame - this.trail ) {
+				if ( drawing && t > this.iterationsPerFrame - this.trail ) {
 					this.drawNub( nub );
 				}
 			});
 
-			if ( !this.done && 0 == this.iteration % this.generation ) {
-				// no more death :-) ... or birth :-/
-				const survived = this.sarnath();
-				this.paused = this.fps;
-				this.done = ( 0 == survived ) || ( survived >= this.maxSurvival );
+			if ( this.done ) continue; // no more death, no more birth
+
+			if ( this.doom() ) {
+				this.sarnath();
+				if ( this.iterationsPerFrame > this.generation ) {
+					this.paused = this.fps * .02 + 1;
+				} else {
+					this.paused = this.fps;
+				}
+				this.drawFinalState( this.nubs, this.survivalCounts );
+				break;
 			}
 		}
+	}
+
+	incrementIteration() {
+		if ( this.done ) return;
+				
+		this.iteration++;
+		if ( this.iteration > this.maxGenerations * this.generation ) {
+			this.setDone();
+		}
+		return this.done;
+	}
+
+	setDone() {
+		if ( !this.done && this.iterationsPerFrame > 10 ) {
+			this.iterationsPerFrame = 10;
+		}
+		this.done = true;
+	}
+
+	skip( count = 10 ) {
+		const y = this.h * .93;
+
+		if ( this.paused>0 ) {
+			this.fillText( 'could not skip', 12, y );
+			return; // gross
+		}
+			
+		clearTimeout( this.timeout );
+		this.paused = 99999;
+
+		this.fillText( `skipping from ${this.iteration}`, 12, y );
+
+		for ( let i = 0 ; i < count && !this.done ; i++ ) {
+			while( true ) {
+				if( this.incrementIteration() ) break;
+				this.nubs.forEach( nub=>nub.move(this) );
+				if ( this.doom() ) {
+					this.sarnath();
+					this.spawn( this.winners );
+					this.winners = null;
+					break;
+				}
+			}
+		}
+		this.fillText( `to ${this.iteration}`, 33, y );
+		this.paused = -1;
+		this.nextFrame();
+		console.log( 'giddy up...' );
+	}
+
+	doom() {
+		return 0 == this.iteration % this.generation;
 	}
 
 	sarnath() {
@@ -140,7 +192,7 @@ class Evo {
 
 		if ( winners.length < 2 ) {
 			// what did you do to all the lovely nubblies?
-			this.done = true;
+			this.setDone();
 			return 0;
 		}
 
@@ -150,7 +202,7 @@ class Evo {
 
 		// bit hacky... don't spawn if we are done...
 		if ( percent >= this.maxSurvival ) {
-			this.done = true;
+			this.setDone();
 			return percent;
 		}
 
@@ -159,7 +211,13 @@ class Evo {
 
 		this.nubs.forEach( nub=>nub.dead = true );
 		winners.forEach( winner=>winner.dead = false );
+
 		this.winners = winners;
+		//this.spawn( winners );
+		
+		if ( percent > this.maxSurvival ) {
+			this.setDone();
+		}		
 
 		return percent;
 	}
@@ -168,147 +226,11 @@ class Evo {
 		const nextGeneration = new Array( this.nubCount ).fill( 0 ).map( _=> {
 			const mom = winners[ Math.floor( Math.random() * winners.length ) ];
 			const dad = winners[ Math.floor( Math.random() * winners.length ) ];
-			return dad.rut( mom ); // :-D
+			return dad.rut( mom, this.mutationRate ); // :-D
 		});
 
 		this.nubs = nextGeneration;
 		this.placeNubs();
-	}
-
-	/////////////////////////////////////////////////////////////////////////////
-	// drawing routines
-
-	clear( color = 'rgba(255,255,255,.84)' ) {
-		this.context.fillStyle = color;
-		this.fillRect();
-	}
-
-	drawGraph() {
-		this.context.lineWidth = 3;
-		this.context.strokeStyle = 'green';
-		this.context.beginPath();
-
-		const w = 10;
-
-		// make sure it fits on the screen...
-
-		const counts = this.survivalCounts.length * w > this.w 
-			? this.survivalCounts.slice( -this.w / w + 1 )
-			: this.survivalCounts;
-
-		// draw the line graph
-
-		counts.forEach( (v,x)=> {
-			const y = this.graphY( v );
-			x *= w;
-			x ? this.context.lineTo( x,y ) : this.context.moveTo( x,y );
-		});
-		this.context.stroke()
-
-		// label latest min / max values
-
-		let min = 110, minX = -1;
-		let max = -99, maxX = -1;
-
-		counts.forEach( (v,x)=> {
-			if ( v <= min ) {
-				min = v;
-				minX = x;
-			}
-			if ( v >= max ) {
-				max = v;
-				maxX = x;
-			}
-		});
-		//console.log( `min ${min} at ${minX} ; max ${max} at ${maxX}` );
-
-		if ( min == max ) return; // too boring and looks dumb
-
-		const o = w * 1;
-		const oldFont = this.context.font;
-		this.context.font = '12px Comic-Sans'
-		this.context.fillStyle = 'green';
-		this.context.fillText( `${min}%`, minX * w + 0, this.graphY( min ) + o );
-		this.context.fillText( `${max}%`, maxX * w + 0, this.graphY( max ) - o );
-		this.context.font = oldFont;
-	}
-
-	graphY( v ) {
-		return this.h - this.h * v / 100;
-	}
-
-	drawLegend() {				
-		this.context.fillStyle = 'lightgray'
-		this.fillRect(20,1,280,24);
-
-		const g = Math.floor( this.iteration / this.generation );
-		let i = '' + this.iteration % this.generation;
-		while ( i.length < 3 ) i = `0${i}`;
-
-		const sg = `${g}.${i}`;
-		const sc = this.survivalCounts.length
-			? `: ${this.survivalCounts.slice(-3).map( p=>`${p}%`).join( ', ' )}`
-			: '';
-		const m = `${sg}${sc}`;
-
-		this.context.fillStyle = 'black';
-		this.context.fillText( m, 22, 22 );
-
-		if ( this.sarnathCounter < 0 ) return;
-
-		this.context.fillStyle = 'red';
-		const s = `${this.lastSurviverCount} of ${this.nubCount} survived`;
-		this.context.fillText( s, this.w * .30, this.h * .88 );
-	}
-
-	drawNub( nub ) {
-		const r = nub.position[ 0 ];
-		const c = nub.position[ 1 ];
-		const x = c * this.scale;
-		const y = r * this.scale;
-
-		this.context.fillStyle = nub.dead 
-			? ( Util.r1() < 0 ? 'lightgray' : 'gray' )
-			: nub.color;
-		this.fillRect( x, y, this.scale, this.scale );
-	}
-
-	fillRect( x = 0, y = 0, w = this.w, h = this.h ) {
-		this.context.fillRect( x, y, w, h);
-	}
-
-	fillArc( x = 0, y = 0, r = 5, s=0, e = 2 * Math.PI) {
-		this.context.beginPath();
-		this.context.arc( x,y,r,s,e );
-		this.context.closePath();
-		this.context.fill();
-		this.context.stroke();
-	}
-
-	line( x0, y0, x1, y1 ) {
-		this.context.beginPath();
-		this.context.moveTo( x0, y0 );
-		this.context.lineTo( x1, y1 );
-		this.context.closePath();
-		this.context.stroke();
-	}
-
-	finalAnalyse() {
-		this.printFinalState();
-		this.drawFinalState();
-	}
-
-	printFinalState() {
-		const o = Util.copyKeys( 'survivalCounts', this );
-		console.log( JSON.stringify( o ) );
-	}
-
-	drawFinalState() {
-		this.clear( 'white' );
-		this.drawMechanism();
-		this.nubs.forEach( nub=> this.drawNub( nub ) );
-		this.drawGraph();
-		this.drawLegend();
 	}
 
 	nextFrame() {
@@ -318,36 +240,21 @@ class Evo {
 		this.timeout = setTimeout( () => requestAnimationFrame( ()=>this.run() ) , 1000 / this.fps );
 	}
 
-	// sometimes this is easier to create the drawMechanism for new ones
-	debugMechanism() {
-		const imageData = this.context.getImageData( 0, 0, this.w,this.h);
-		let index = 0;
-		for( let y = 0 ; y < this.h ; y++ ) {
-			for( var x = 0 ; x < this.w ; x++ ) {
-				const k = this.survivedXY( x, y );
-				imageData.data[ index++ ] = 0;
-				imageData.data[ index++ ] = 0;
-				imageData.data[ index++ ] = 255;
-				imageData.data[ index++ ] = k?255:0;
-			}
-		}
-		this.context.putImageData( imageData, 0, 0 );
+	finalAnalyse() {
+		this.printFinalState();
+		this.drawFinalState( this.nubs, this.survivalCounts, this.iteration, this.generation, this.sarnathCounter, this.done );
 	}
 
-	/////////////////////////////////////////////////////////////////////////////
-	// miscellanous geometry
-
-	insideCircle( x,y, cx,cy, radius ) {
-		const xd = x - cx;
-		const yd = y - cy;
-		return ( xd * xd + yd * yd ) < ( radius * radius );
+	printFinalState() {
+		const o = Util.copyKeys( 'survivalCounts', this );
+		console.log( JSON.stringify( o ) );
 	}
 
 	/////////////////////////////////////////////////////////////////////////////
 	// new mechanisms need to be added here
 
 	drawMechanism() {
-		this.context.fillStyle = 'rgba(0,255,0,.4)';
+		this.context.strokeStyle = this.context.fillStyle = 'rgba(0,255,0,.4)';
 		const w = this.w * .5;
 		const h = this.h * .5;
 
