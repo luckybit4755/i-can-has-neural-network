@@ -5,15 +5,6 @@ class Util {
 		return 2 * ( Math.random() - Math.random() );
 	}
 
-	static arrayAdd(a,b) {
-	   return a.map( (v,i)=>v+b[i]);
-	}
-
-	// convert [0:1] to [-1:+1];
-	static toPM( v ) {
-		return 2 * v - 1;
-	}
-
 	static randomArray() {
 		switch ( arguments.length ) {
 			case 1: return new Array( arguments[ 0 ] ).fill( 0 ).map( _=> Util.r1() );
@@ -28,6 +19,24 @@ class Util {
 	// useful for non-rectangular arrays (like layers)
 	static randomDupe( layers ) {
 		return layers.map( layer => Util.randomArray( layer.length ) );
+	}
+
+	static arrayAdd(a,b) {
+	   return a.map( (v,i)=>v+b[i]);
+	}
+
+	// convert [0:1] to [-1:+1];
+	static toPM( v ) {
+		return 2 * v - 1;
+	}
+
+	static pmMinMax( a ) {
+		a.forEach( (v,i) => a[ i ] = Math.round( Math.max( -1, Math.min( 1, v ) ) ) );
+		return a;
+	}
+	static pmTanh( a ) {
+		a.forEach( (v,i) => a[ i ] = Math.round( Math.tanh( v ) ) );
+		return a;
 	}
 
 	static copyKeys( keys, source, target = {} ) {
