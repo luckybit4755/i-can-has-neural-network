@@ -8,6 +8,7 @@
 
 		<link rel="stylesheet" type="text/css" href="css/evo.css">
 
+		<script type="text/javascript" src="js/Drawing.js"></script>
 		<script type="text/javascript" src="js/Demo.js"></script>
 		<script type="text/javascript" src="js/Evo.js"></script>
 		<script type="text/javascript" src="js/Nub.js"></script>
@@ -44,7 +45,7 @@
 			</div>
 			<div>
 				<span><label>size</label><input size="5" name="size" value="128"></input></span>
-				<span><label>count</label><input size="5" name="nubCount" value="200"></input></span>
+				<span><label>count</label><input size="5" name="nubCount" value="300"></input></span>
 			</div>
 			<div>
 				<span><label>generation</label><input size="5" name="generation" value="300"></input></span>
@@ -53,13 +54,19 @@
 					<option>4</option>
 					<option selected="lul">10</option>
 					<option>20</option>
+					<option>100</option>
+					<option>999</option>
 				</select></span>
 			</div>
+				<span><label>maxGenerations</label><input size="5" name="maxGenerations" value="200"></input></span>
 				<span><label>maxSurvival</label><input size="5" name="maxSurvival" value="95"></input></span>
-				<span><label>maxGenerations</label><input size="5" name="maxGenerations" value="128"></input></span>
 			<div>
 				<span><button name="evo">evo</button></span>
-				<span><button name="record">record video</button></span>
+				<span>
+					<button name="skip">skip</button>
+					<button name="apotheosize">apotheosize</button>
+					<button name="record">record</button>
+				</span>
 			</div>
 		</controls>
 
@@ -77,6 +84,9 @@
 				<li>perFrame: controls how fast the simulation runs vs the display, higher is faster</li>
 				<li>maxSurvival: cut-off point at which the simulation halts</li>
 				<li>maxGenerations: maximum number of generation before halting the simulatinon</li>
+				<li>skip: skips forward 10 generations</skip>
+				<li>apotheosize: can be run at the end to create an unholy nub monoculture! :-D</li>
+				<li>record: record a video (be sure to stop it!) and download it</li>
 			</ul>
 			<div>Be sure to hit the "evo" button to make the changes take effect.</div>
 			<div>The biggest thing to play with is the number and shape of the hidden layers!</div>
@@ -166,6 +176,13 @@
 			But then again, if you find your nubs are
 			boring, you can just tap on the glass to send
 			them scurrying!
+		</p>
+		<p>
+			Final take away:
+			<ol>
+				<li><a href="https://youtu.be/1qNeGSJaQ9Q?t=144">relatable</a></li>
+				<li><a href="https://youtu.be/-UJ9K8lMxPA?t=29">less chaotic</a></li>
+			</ol>
 		</p>
 		<p>
 			Inspired in large part by 

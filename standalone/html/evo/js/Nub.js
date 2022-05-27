@@ -6,7 +6,10 @@
  */
 class Nub {
 	static INPUT_SOURCE_COUNT = 15;
-	static OUTPUT_COUNT = 8 + 1; // compass rose
+
+	static OUTPUT_CLOCK   = 8 + 0;
+	static OUTPUT_IMPULSE = 8 + 1;
+	static OUTPUT_COUNT   = 8 + 2; // compass rose, clock, impulseM
 
 	constructor( hiddenCount = null ) {
 		this.age = 0;
@@ -23,6 +26,7 @@ class Nub {
 
 	createBrain( hiddenCount = null ) {
 		this.clock = Util.r1();
+		this.impulseM = Util.r1();
 
 		this.layers = new Array();
 
@@ -57,6 +61,10 @@ class Nub {
 
 		this.biases = Util.randomDupe( this.layers );
 		this.memory = Util.randomDupe( this.layers );
+	}
+
+	clone() {
+		return this.rut( this, 0 ); // go on and ... 
 	}
 
 	move( evo ) {
@@ -156,7 +164,7 @@ class Nub {
 
 	react( board ) {
 	   	// this .001 is just made up
-		this.clock = Math.tanh( this.clock + this.outputs[ 8 ] * .001 );
+		this.clock = Math.tanh( this.clock + this.outputs[ Nub.OUTPUT_CLOCK ] * .001 );
 
 		const impulse = this.impulse();
 
@@ -175,8 +183,17 @@ class Nub {
 
 	// there are a lot of fun ideas to play with here...
 	impulse() {
-		const impulse = this.impulse2();
-		return impulse;
+		const i = Util.toOne( this.outputs[ Nub.OUTPUT_IMPULSE ] );
+		const v = 1 - i;
+
+		const i1 = this.impulse1();
+		const i2 = this.impulse2();
+
+		// FIXME: how to linearly interpolate 3 values :-(
+		return [
+			Math.round( i * i1[ 0 ] + v * i2[ 0 ] ),
+			Math.round( i * i1[ 1 ] + v * i2[ 1 ] )
+		];
 	}
 
 	// same as impulse0 but more legible
@@ -233,6 +250,7 @@ class Nub {
 		const kid = new Nub( this.hiddenCount );
 
 		kid.clock = this.dnaValue( kid.clock, this.clock, that.clock );
+		kid.impulseM = this.dnaValue( kid.impulseM, this.impulseM, that.impulseM );
 
 		this.layers.forEach( (thisLayer,i) => {
 			this.dna( kid.layers[ i ], thisLayer, that.layers[ i ], mutationRate );
@@ -263,6 +281,55 @@ class Nub {
 	dnaValue( kid, dad, mom, mutationRate ) {
 		return ( Math.random() < mutationRate ) ? kid
 			: Math.random() < .5 ? mom : dad;
+	}
+
+	/////////////////////////////////////////////////////////////////////////////
+
+	abomination( that ) {
+		this.clock    += that.clock;
+		this.impulseM += that.impulseM;
+
+		this.layers.forEach( (thisLayer,i) => {
+			this.merge( thisLayer, that.layers[ i ] );
+			this.merge( this.biases[ i ], that.biases[ i ] );
+			this.merge( this.memory[ i ], that.memory[ i ] );
+		});
+
+		this.weights.forEach( (thisWeight,i) => {
+			const thatWeight = that.weights[ i ];
+			thisWeight.forEach( (thisRow,j) => {
+				this.merge( thisRow, thatWeight[ j ] );
+			});
+		});
+
+		return this;
+	}
+
+	merge( a,b ) {
+		a.forEach( (_,i) => a[ i ] += b[ i ] );
+	}
+
+	scale( count ) {
+		this.clock    /= count;
+		this.impulseM /= count;
+
+		this.layers.forEach( (thisLayer,i) => {
+			this.scaleA( thisLayer, count );
+			this.scaleA( this.biases[ i ], count );
+			this.scaleA( this.memory[ i ], count );
+		});
+
+		this.weights.forEach( (thisWeight,i) => {
+			thisWeight.forEach( (thisRow,j) => {
+				this.scaleA( thisRow, count );
+			});
+		});
+
+		return this;
+	}
+
+	scaleA( a, count ) {
+		a.forEach( (_,i) => a[ i ] /= count );
 	}
 
 	/////////////////////////////////////////////////////////////////////////////
@@ -313,7 +380,7 @@ class Nub {
 	/////////////////////////////////////////////////////////////////////////////
 	// bit of friendly brain surgery between friends :-P
 
-	static STATE = 'clock hiddenCount layers biases memory weights'.split( ' ' );
+	static STATE = 'clock impulseM hiddenCount layers biases memory weights'.split( ' ' );
 
 	getBrain() {
 		return Util.copyKeys( Nub.STATE, this );

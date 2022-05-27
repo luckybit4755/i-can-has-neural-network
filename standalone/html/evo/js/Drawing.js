@@ -4,10 +4,23 @@
  *
  */
 class Drawing {
+
+	/////////////////////////////////////////////////////////////////////////////
+
+	static WHITE_A    = 'rgba(255,255,255,.93)';
+	static GREY_A     = 'rgba(200,200,200,.93)';
+	static GREY       = 'rgb(200,200,200)';
+	static LIGHT_GREY = 'rgb(222,222,222)';
+
+	static FONT       = '22px Comic-Sans';
+	static SMALL_FONT = '12px Comic-Sans';
+
+	/////////////////////////////////////////////////////////////////////////////
+
 	constructor( canvas = null ) {
 		this.canvas = canvas || document.getElementsByTagName( 'canvas' )[ 0 ];
 		this.context = this.canvas.getContext( '2d' );
-		this.context.font = '22px Comic-Sans';
+		this.context.font = Drawing.FONT;
 
 		this.w = parseInt( this.canvas.width );
 		this.h = parseInt( this.canvas.height );
@@ -23,12 +36,12 @@ class Drawing {
 
 	/////////////////////////////////////////////////////////////////////////////
 
-	clear( color = 'rgba(255,255,255,.66)' ) {
+	clear( color = Drawing.WHITE_A ) {
 		this.context.fillStyle = color;
 		this.fillRect();
 	}
 
-	drawGraph( counts, done = false, w = 10, color = 'green', lineWidth = 3, font = '12px Comic-Sans' ) {
+	drawGraph( counts, done = false, w = 10, color = 'green', lineWidth = 3, font = Drawing.SMALL_FONT ) {
 		this.context.lineWidth = lineWidth;
 		this.context.strokeStyle = color;
 
@@ -84,29 +97,33 @@ class Drawing {
 		return this.h - this.h * v / 100;
 	}
 
-	drawLegend( iteration, generation, survivalCounts, count, sarnathCounter ) {
-		this.context.fillStyle = 'lightgray'
-		this.fillRect(20,1,280,24);
+	drawLegend( iteration, generation, counts, count, sarnathCounter ) {
+		const x = 33;
+		const y = 39;
+		const toShow = 3;
 
-		const g = Math.floor( iteration / generation );
-		let i = '' + iteration % generation;
-		while ( i.length < 3 ) i = `0${i}`;
+		const g = Util.padLeft( '' + Math.floor( iteration / generation ), 3, ' ' );
+		const i = Util.padLeft( '' + iteration % generation );
+		const legend = `${g}.${i}${this.percentArray( counts, toShow )}`;
 
-		const sg = `${g}.${i}`;
-		const sc = survivalCounts.length
-			? `: ${survivalCounts.slice(-3).map( p=>`${p}%`).join( ', ' )}`
-			: '';
-		const m = `${sg}${sc}`;
+		this.context.fillStyle = Drawing.GREY_A;
+		this.fillRect( x-6 , y-23, (3+1+3+1+1+toShow*4) * 15, 33 );
 
 		this.context.fillStyle = 'black';
-		this.fillText( m, 22, 22 );
+		this.fillText( legend, x, y );
 
 		if ( sarnathCounter > -1 ) {
 			this.context.fillStyle = 'red';
-			const last = survivalCounts[ survivalCounts.length - 1 ];
-			const s = `${last} of ${count} survived`;
-			this.fillText( s, this.w * .30, this.h * .88 );
+			const last = counts[ counts.length - 1 ];
+			const sarnath = `${last} of ${count} survived`;
+			this.fillText( sarnath, this.w * .30, this.h * .88 );
 		}
+	}
+
+	percentArray( counts, toShow = 3 ) {
+		return counts.length
+			? `: ${counts.slice(-toShow).map( p=>`${p}%`).join( ', ' )}`
+			: '';
 	}
 
 	drawNubs( nubs ) {
@@ -124,7 +141,7 @@ class Drawing {
 		const s = p ? this.scale * .499 : this.scale;
 
 		this.context.strokeStyle = this.context.fillStyle = nub.dead 
-			? ( Util.r1() < 0 ? 'rgb(200,200,200)' : 'rgb(222,222,222)' )
+			? ( Util.r1() < 0 ? Drawing.GREY : Drawing.LIGHT_GREY )
 			: nub.color;
 
 		p > 0 ? this.fillArc( x, y, s ) : this.fillRect( x, y, s, s );
@@ -155,7 +172,7 @@ class Drawing {
 	}
 
 	drawFinalState( nubs, counts, iteration, generation, sarnathCounter, done = false ) {
-		this.clear( 'rgba(255,255,255,.93)' );
+		this.clear( Drawing.WHITE_A );
 		this.drawMechanism();
 		this.drawNubs( nubs );
 		this.drawGraph( counts, done );

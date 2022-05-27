@@ -30,6 +30,11 @@ class Util {
 		return 2 * v - 1;
 	}
 
+	// convert [-1:+1] to [0:1]
+	static toOne( v ) {
+		return Math.max( 0, Math.min( 1, .5 * v + 1 ) );
+	}
+
 	static pmMinMax( a ) {
 		a.forEach( (v,i) => a[ i ] = Math.round( Math.max( -1, Math.min( 1, v ) ) ) );
 		return a;
@@ -43,5 +48,10 @@ class Util {
 		keys = ( 'string' === typeof( keys ) ) ? keys.split( ' ' ) : keys;
 		keys.forEach( key => target[ key ] = source[ key ] );
 		return target;
+	}
+
+	static padLeft( s, l = 3, c = '0' ) {
+        while ( s.length < l ) s = `${c}${s}`;
+		return s;
 	}
 };

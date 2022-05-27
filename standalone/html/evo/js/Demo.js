@@ -1,6 +1,6 @@
 /**
  *
- * Mostly handles ui junk
+ * Managed Evo instances and handles the ui tasks.
  *
  */ 
 class Demo {
@@ -12,44 +12,57 @@ class Demo {
 
 	controller() {
 		this.controls = this.controls();
+		this.evoButton();
+		this.skip();
+		this.apotheosize();
+		this.record();
+	} 
 
+	/////////////////////////////////////////////////////////////////////////////
+
+	evoButton() {
 		const button = this.controls.get( 'evo' )();
 		button.addEventListener( 'click', () => {
 			try { 
+				this.disable( button );
 				this.click()
+				this.enable( button );
 			} catch ( e ) {
 				console.log( e );
 				// TODO: warn the user...
 			}
 		});
 		button.click();
-
-		const recordCanvas = new RecordCanvas( this.evo.canvas );
-
-		const record = this.controls.get( 'record' )();
-		record.addEventListener( 'click', () => {
-			if ( record.recording ) {
-				recordCanvas.stop();
-				record.recording = false;
-				record.textContent = 'record video';
-			} else {
-				recordCanvas.start();
-				record.recording = true;
-				record.textContent = 'stop recording';
-			}
-		});
-	} 
+	}
 
 	click() {
+		const values = this.getValues();
+
+		this.evo.configure(
+			values.get( 'hidden' ),
+			values.get( 'size' ),
+			values.get( 'nubCount' ),
+			values.get( 'generation' ),
+			values.get( 'mechanism' ),
+			values.get( 'iterationsPerFrame' )
+		);
+		this.evo.run();
+	}
+
+	// parsing and validation
+	getValues() {
 		const errors = [];
 
-		// parsing and validation
 		const values = new Map();
 		for ( const [key,get] of this.controls ) {
 			let value = get();
+
+			// skip the buttons
+			if ( 'object' === typeof( value ) ) {
+				continue;
+			}
+
 			switch ( key ) {
-				case 'record': 
-				case 'evo': break;
 				case 'hidden':
 					const hidden = value
 						.replace( /[^0-9]+/g, ' ' ).replace( /\s\s*/, ' ' ).trim()
@@ -75,16 +88,60 @@ class Demo {
 			throw new Error( errors.join( '\n' ) );
 		}
 
-		this.evo.configure(
-			values.get( 'hidden' ),
-			values.get( 'size' ),
-			values.get( 'nubCount' ),
-			values.get( 'generation' ),
-			values.get( 'mechanism' ),
-			values.get( 'iterationsPerFrame' )
-		);
-		this.evo.run();
+		return values;
 	}
+
+	/////////////////////////////////////////////////////////////////////////////
+
+	skip() {
+		const skip = this.controls.get( 'skip' )();
+		skip.addEventListener( 'click', () => { 
+			this.disable( skip );
+			this.evo.skip() 
+			this.enable( skip );
+		});
+	}
+
+	/////////////////////////////////////////////////////////////////////////////
+
+	apotheosize() {
+		const apotheosize = this.controls.get( 'apotheosize' )();
+		apotheosize.addEventListener( 'click', () => {
+			this.disable( apotheosize );
+			this.evo.apotheosis();
+			this.enable( apotheosize );
+		});
+	}
+
+	/////////////////////////////////////////////////////////////////////////////
+
+	record()  {
+		const recordCanvas = new RecordCanvas( this.evo.canvas );
+		const record = this.controls.get( 'record' )();
+		record.addEventListener( 'click', () => {
+			if ( record.recording ) {
+				recordCanvas.stop();
+				record.recording = false;
+				record.textContent = 'record';
+			} else {
+				recordCanvas.start();
+				record.recording = true;
+				record.textContent = 'stop';
+			}
+		});
+	}
+
+	/////////////////////////////////////////////////////////////////////////////
+
+	disable( e ) {
+		e.setAttribute( 'disabled', 'x' );
+	}
+
+	enable( e ) {
+		e.removeAttribute( 'disabled' );
+	}
+	
+	/////////////////////////////////////////////////////////////////////////////
 
 	controls() {
 		const controls = new Map();

@@ -56,6 +56,8 @@ class Evo extends Drawing {
 		this.iteration = 0;
 		this.paused = 0;
 
+		this.apotheosized = false;
+
 		// here they are!
 		this.nubs = new Array( this.nubCount ).fill( 0 ).map( _=>new Nub( hidden ) );
 		this.placeNubs();
@@ -127,7 +129,7 @@ class Evo extends Drawing {
 				} else {
 					this.paused = this.fps;
 				}
-				this.drawFinalState( this.nubs, this.survivalCounts );
+				this.drawFinalState();
 				break;
 			}
 		}
@@ -233,6 +235,26 @@ class Evo extends Drawing {
 		this.placeNubs();
 	}
 
+	// where the mantle of godhood descends there too we find madness!
+	apotheosis() {
+		if ( !this.done ) {
+			return console.log( 'it is too soon...' );
+		}
+		if ( this.apotheosized ) {
+			return console.log( 'the refulgent is among us!' );
+		}
+
+		const theRefulgent = this.nubs[ 0 ];
+		this.nubs.forEach( (nub,i) => i ? theRefulgent.abomination( nub ) : nub );
+		theRefulgent.scale( this.nubs.length );
+		this.nubs.forEach( (nub,i) => this.nubs[ i ] = i ? theRefulgent.clone() : theRefulgent );
+		this.placeNubs();
+
+		console.log( 'praise him!', JSON.stringify( theRefulgent.getBrain() ) );
+	}
+
+	/////////////////////////////////////////////////////////////////////////////
+
 	nextFrame() {
 		if ( this.timeout ) {
 			clearTimeout( this.timeout );
@@ -242,7 +264,11 @@ class Evo extends Drawing {
 
 	finalAnalyse() {
 		this.printFinalState();
-		this.drawFinalState( this.nubs, this.survivalCounts, this.iteration, this.generation, this.sarnathCounter, this.done );
+		this.drawFinalState();
+	}
+
+	drawFinalState() {
+		super.drawFinalState( this.nubs, this.survivalCounts, this.iteration, this.generation, this.sarnathCounter, this.done );
 	}
 
 	printFinalState() {
