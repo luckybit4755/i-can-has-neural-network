@@ -60,24 +60,13 @@ class Evo extends Drawing {
 
 		// here they are!
 		this.nubs = new Array( this.nubCount ).fill( 0 ).map( _=>new Nub( hidden ) );
-		this.placeNubs();
+		this.board = new Board( this.nubs, this.size );
 
 		return this;
 	}
 
 	placeNubs() {
-		this.board = new Array( this.size ).fill( this.size ).map( _=> new Array( this.size ).fill( false ) );
-		this.nubs.forEach( nub=> {
-			while( true ) {
-				const r = Math.floor( Math.random() * this.size );
-				const c = Math.floor( Math.random() * this.size );
-				if ( !this.board[ r ][ c ] ) {
-					nub.position = [ r, c ];
-					this.board[ r ][ c ] = nub;
-					break;
-				}
-			}
-		});
+		this.board.reset( this.nubs );
 	}
 
 	run() {

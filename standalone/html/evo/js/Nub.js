@@ -71,7 +71,7 @@ class Nub {
 		const board = evo.board;
 		const generation = evo.generation;
 
-		this.initializeInputs( board, generation );
+		this.sensors( board, generation );
 		this.forwardPropagation( evo.nanCheck );
 		this.react( board );
 
@@ -80,8 +80,7 @@ class Nub {
 
 	/////////////////////////////////////////////////////////////////////////////
 
-	initializeInputs( board, generation ) {
-		// look! a sensor array :-P
+	sensors( board, generation ) {
 		this.inputs.forEach( (v,i) => {
 			const b = this.biases[ 0 ][ i ];
 			const k = this.memory[ 0 ][ i ];
@@ -97,11 +96,11 @@ class Nub {
 
 		if ( i < Util.OFFSETS.length ) {
 			// look in 8 directions
-			return this.occupied( board, Util.OFFSETS[ i ] ) ? 1 : -1; 
+			return board.occupied( this.position, Util.OFFSETS[ i ] ) ? 1 : -1; 
 		} else {
 			switch ( i - Util.OFFSETS.length ) {
-				case 0: return Util.toPM( this.position[ 0 ] / board.length );
-				case 1: return Util.toPM( this.position[ 1 ] / board.length );
+				case 0: return Util.toPM( this.position[ 0 ] / board.size );
+				case 1: return Util.toPM( this.position[ 1 ] / board.size );
 				case 2: return Util.r1();
 				case 3: return Math.cos( now * this.clock ); 
 				case 4: return Math.sin( now * .25 ); 
@@ -172,8 +171,7 @@ class Nub {
 		if ( ( 0 == impulse[ 0 ] && 0 == impulse[ 1 ] ) ) {
 			return;
 		}
-
-		if ( this.occupied( board, impulse ) ) {
+		if ( board.occupied( this.position, impulse ) ) {
 			this.couldMove = false;
 			return 
 		} 
@@ -238,10 +236,7 @@ class Nub {
 	}
 
 	updatePosition( board, impulse ) {
-		const position = Util.arrayAdd( this.position, impulse );
-		this.boardSet( board, this.position, null );
-		this.position = position;
-		this.boardSet( board, this.position, this );
+		this.position = board.moveBy( this.position, impulse );
 	}
 
 	/////////////////////////////////////////////////////////////////////////////
@@ -333,7 +328,7 @@ class Nub {
 	}
 
 	/////////////////////////////////////////////////////////////////////////////
-
+/*
 	occupied( board, offset = null) {
 		const position = offset ? Util.arrayAdd( this.position, offset ) : this.position;
 		// consider out of bounds to be occupied
@@ -352,6 +347,7 @@ class Nub {
 		const c = position[ 1 ];
 		board[ r ][ c ] = value;
 	}
+*/
 
 	/////////////////////////////////////////////////////////////////////////////
 
