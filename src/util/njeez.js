@@ -1,4 +1,5 @@
 const nj = require('numjs');
+const sprintf = require('sprintf-js').sprintf;
 
 const isArray = ( x ) => 'object' === typeof( x ) && 'selection' in x;
 
@@ -29,11 +30,19 @@ const lamda = ( n, cb ) => {
 	return y
 };
 
+const toFlatString = ( a ) => {
+	return a.selection.data
+		.map( v => sprintf( '%+8.4f', v ) )
+		.join( ', ' )
+	;
+}
+
 const njeez = {
 	lamda: lamda,
 	isArray: isArray,
 	toArray: toArray,
-	flatten: (n)=>n.selection.data
+	flatten: (n)=>n.selection.data,
+	toFlatString: toFlatString
 };
 
 Object.keys( nj ).forEach( key => {
