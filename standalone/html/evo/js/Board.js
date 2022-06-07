@@ -3,7 +3,8 @@ class Board {
 
 	/////////////////////////////////////////////////////////////////////////////
 
-	constructor( nubs = null, size = 128 ) {
+	constructor( nubs = null, size = 128, wrap = true ) {
+		this.wrap = wrap;
 		this.reset( nubs, size );
 	}
 
@@ -34,19 +35,45 @@ class Board {
 	/////////////////////////////////////////////////////////////////////////////
 
 	set( position, value ) {
+		if ( this.wrap ) {
+			position = this.mod( position );
+		} else {
+			if ( !this.inBounds( position ) ) return false
+		}
 		this.board[ position[ 0 ] ][position[ 1 ] ] = value;
 	}
 
 	get( position ) {
+		if ( this.wrap ) {
+			position = this.mod( position );
+		} else {
+			if ( !this.inBounds( position ) ) return false
+		}
 		return this.board[ position[ 0 ] ][ position[ 1 ] ];
+	}
+
+	mod( position ) {
+		return position.map( p => ( p % this.size + this.size ) % this.size );
+	}
+
+	clamp( position ) {
+		return position.map( p => Math.max( 0, Math.min( this.size - 1, p ) ) );
+	}
+
+	bound( position ) {
+		return this.wrap ? this.mod( position ) : this.clamp( position );
 	}
 
 	/////////////////////////////////////////////////////////////////////////////
 
 	occupied( position, offset = null ) {
 		position = this.addOffset( position, offset );
-		// consider out of bounds to be occupied
-		if ( !this.inBounds( position ) ) return true;
+		if ( this.wrap ) {
+			position = this.mod( position );
+		} else {
+			// consider out of bounds to be occupied
+			if ( !this.inBounds( position ) ) return true;
+		}
 		return this.get( position );
 	}
 
@@ -64,7 +91,7 @@ class Board {
 
 	moveBy( oldPosition, offset, value ) {
 		this.set( oldPosition, null );
-		const newPosition = this.addOffset( oldPosition, offset );
+		const newPosition = this.bound( this.addOffset( oldPosition, offset ) );
 		this.set( newPosition, value );
 		return newPosition;
     }
