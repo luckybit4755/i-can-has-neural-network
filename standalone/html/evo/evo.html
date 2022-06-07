@@ -18,10 +18,17 @@
 		<script type="text/javascript" src="js/Evo.js"></script>
 		<script type="text/javascript" src="js/Nub.js"></script>
 		<script type="text/javascript" src="js/Util.js"></script>
+		<!-- 
+		<script type="text/javascript" src="js/gpu-browser.min.js"></script>
+		-->
 		<script type="text/javascript" src="js/RecordCanvas.js"></script>
 
 		<script type="text/javascript">
-			window.addEventListener( 'load', () => new Demo().run() );
+			/*let gpu = null;*/
+			window.addEventListener( 'load', () => {
+				/*gpu = new GPU();*/
+				new Demo().run() 
+			});
 		</script>
 
 		<style>
@@ -40,9 +47,9 @@
 		<canvas width="512" height="512"></canvas>
 		<controls>
 			<div>
-				<span><label>hidden</label><input size="5" name="hidden" value="4"></input></span>
+				<span><label>hidden</label><input size="5" name="hidden" value="6,4"></input></span>
 				<span><label>mechanism</label><select name="mechanism" useIndex="true"></span>
-					<option>bottom half</option>
+					<option>bottom third</option>
 					<option>right quarter</option>
 					<option selected=":-)">middle circle</option>
 					<option>xxx</option>
@@ -50,7 +57,7 @@
 			</div>
 			<div>
 				<span><label>size</label><input size="5" name="size" value="128"></input></span>
-				<span><label>count</label><input size="5" name="nubCount" value="300"></input></span>
+				<span><label>count</label><input size="5" name="nubCount" value="512"></input></span>
 			</div>
 			<div>
 				<span><label>generation</label><input size="5" name="generation" value="300"></input></span>
@@ -63,8 +70,16 @@
 					<option>999</option>
 				</select></span>
 			</div>
-				<span><label>maxGenerations</label><input size="5" name="maxGenerations" value="200"></input></span>
+				<span><label>maxGenerations</label><input size="5" name="maxGenerations" value="2222"></input></span>
 				<span><label>maxSurvival</label><input size="5" name="maxSurvival" value="95"></input></span>
+			</div>
+			<div>
+					<label>mutationRate</label>
+					<value name="mutationRate">0.1%</value>
+					<rc target="mutationRate" delta="-1">&#x25c0;</rc>
+					<input type="range" name="mutationRate" min="0" max="20" value="1">
+					<rc target="mutationRate" delta="+1">&#x25b6;</rc>
+			</div>
 			<div>
 				<span><button name="evo">evo</button></span>
 				<span>

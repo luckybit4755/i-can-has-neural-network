@@ -10,7 +10,7 @@ a {
 	text-decoration:none; 
 }
 
-span, label { 
+span, label, value { 
 	display:inline-block; 
 }
 
@@ -22,6 +22,19 @@ label {
 	width:7em; 
 }
 
+value {
+	width:2.5em;
+}
+
 img {
 	float:right;
+}
+
+rc {
+	cursor: default;
+}
+
+rc:hover {
+	color:white;
+	user-select: none;
 }
