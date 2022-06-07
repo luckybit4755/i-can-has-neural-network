@@ -63,7 +63,8 @@ class Drawing {
 			x *= w;
 			x ? this.context.lineTo( x,y ) : this.context.moveTo( x,y );
 		});
-		this.context.stroke()
+		this.context.stroke();
+		this.context.closePath();
 
 		// label latest min / max values
 
@@ -114,7 +115,7 @@ class Drawing {
 
 		if ( sarnathCounter > -1 ) {
 			this.context.fillStyle = 'red';
-			const last = counts[ counts.length - 1 ];
+			const last = Math.floor( counts[ counts.length - 1 ] * count / 100 );
 			const sarnath = `${last} of ${count} survived`;
 			this.fillText( sarnath, this.w * .30, this.h * .88 );
 		}
@@ -127,6 +128,7 @@ class Drawing {
 	}
 
 	drawNubs( nubs ) {
+		this.context.lineWidth = 1;
 		nubs.forEach( nub=> this.drawNub( nub ) );
 	}
 
