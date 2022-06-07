@@ -15,6 +15,7 @@ class Nub {
 		this.age = 0;
 		this.location = [0,0];
 		this.couldMove = true;
+		this.gpuKernels = null;
 
 		this.createBrain( hiddenCount );
 
@@ -123,8 +124,13 @@ class Nub {
 				next[ j ] = Math.tanh( v * k + b );
 			});
 
-			this.multiply( prior, weight, next, nanCheck );
-			next.forEach( (v,j) => next[ j ] = Math.tanh( v ) );
+			if ( this.gpuKernels ) {
+				this.useGpuKernel( prior, weight, next, this.gpuKernels[ i ] );
+//console.log( 'ok?' )
+			} else {
+				this.multiply( prior, weight, next, nanCheck );
+				next.forEach( (v,j) => next[ j ] = Math.tanh( v ) );
+			}
 		});
 
 
@@ -136,6 +142,8 @@ class Nub {
 	// this is wack cuz layers are not like [ [1],[2] ], just [1,2] ...
 	// as a result, it is *not* suitable for general matrix multiplication
 	multiply( prior, weight, next, nanCheck = false ) {
+		//return this.multiply_gpu( prior, weight, next );
+
 		const priorCols = prior.length;
 		const weightRows = weight.length;
 		const weightCols = weight[ 0 ].length;
@@ -159,12 +167,49 @@ class Nub {
 		}
 	}
 
+	createGpuKernels() {
+		const kernels = new Array( this.weights.length );
+		this.weights.forEach( (weight,i) => {
+			const prior = this.layers[ i ];
+			const next = this.layers[ i + 1 ];
+			kernels[ i ] = this.createGpuKernel( prior, weight );
+		});
+		return kernels;
+	}
+
+	createGpuKernel( prior, weight ) {
+		const priorCols = prior.length;
+		const weightCols = weight[ 0 ].length;
+
+		return gpu.createKernel(function(a, b) {
+			let sum = 0;
+			for (let i = 0; i < this.constants.width; i++) {
+				sum += a[this.thread.y][i] * b[i][this.thread.x];
+			}
+			return sum;
+		}).setOutput([1, weightCols]) .setConstants({ width:priorCols });
+	}
+
+	useGpuKernel( prior, weight, next, kernel ) {
+		const a = new Array( prior.length ).fill( 0 ).map( (_,i) => new Float32Array(1).fill( prior[i] ) );
+		const b = weight;
+		const output = kernel( prior, weight ) 
+		next.forEach( (v,i)=> next[i] = Math.tanh( output[i][0] ) );
+	}
+
 	/////////////////////////////////////////////////////////////////////////////
 
 	react( board ) {
-	   	// this .001 is just made up
-		this.clock = Math.tanh( this.clock + this.outputs[ Nub.OUTPUT_CLOCK ] * .001 );
+		this.internalChanges();
+		this.externalChanges( board );
+	}
 
+	internalChanges( scale = .001 ) {
+		this.clock = Math.tanh( this.clock + this.outputs[ Nub.OUTPUT_CLOCK ] * scale );
+		this.impulseM = Math.tanh( this.impulseM + this.outputs[ Nub.OUTPUT_IMPULSE ] * scale );
+	}
+
+	externalChanges( board ) {
 		const impulse = this.impulse();
 
 		this.couldMove = true;
@@ -244,8 +289,8 @@ class Nub {
 	rut( that, mutationRate = 1 / 1000 ) {
 		const kid = new Nub( this.hiddenCount );
 
-		kid.clock = this.dnaValue( kid.clock, this.clock, that.clock );
-		kid.impulseM = this.dnaValue( kid.impulseM, this.impulseM, that.impulseM );
+		kid.clock    = this.dnaValue( kid.clock, this.clock, that.clock, mutationRate );
+		kid.impulseM = this.dnaValue( kid.impulseM, this.impulseM, that.impulseM, mutationRate );
 
 		this.layers.forEach( (thisLayer,i) => {
 			this.dna( kid.layers[ i ], thisLayer, that.layers[ i ], mutationRate );
@@ -262,12 +307,13 @@ class Nub {
 		});
 
 		kid.color = this.fingerprint();
+
 		return kid;
 	}
 
 	dna( kid, dad, mom, mutationRate ) {
 		kid.forEach( (v,j) => {
-			kid[ j ] = this.dnaValue( v, mom[ j ], dad[ j ] );
+			kid[ j ] = this.dnaValue( v, mom[ j ], dad[ j ], mutationRate );
 		});
 	}
 
@@ -328,28 +374,6 @@ class Nub {
 	}
 
 	/////////////////////////////////////////////////////////////////////////////
-/*
-	occupied( board, offset = null) {
-		const position = offset ? Util.arrayAdd( this.position, offset ) : this.position;
-		// consider out of bounds to be occupied
-		if ( !this.inBounds( position, board ) ) return true;
-		return board[ position[0] ][ position[1] ];
-	}
-
-	inBounds( position, board ) {
-		const r = position[ 0 ];
-		const c = position[ 1 ];
-		return !( r < 0 || c < 0 || c >= board[ 0 ].length || r >= board.length );
-	}
-
-	boardSet( board, position, value ) {
-		const r = position[ 0 ];
-		const c = position[ 1 ];
-		board[ r ][ c ] = value;
-	}
-*/
-
-	/////////////////////////////////////////////////////////////////////////////
 
 	fingerprint() {
 		let hash = 0;
@@ -383,7 +407,18 @@ class Nub {
 	}
 
 	setBrain( brain ) {
-		return Util.copyKeys( Nub.STATE, brain, this );
+		Util.copyKeys( Nub.STATE, brain, this );
+		this.inputs = this.layers[ 0 ];
+		this.outputs = this.layers[ this.layers.length - 1 ];
+		return this;
+	}
+
+	brainToJson( brain = null ) {
+		return JSON.stringify( brain ? brain : this.getBrain() );
+	}
+
+	brainFromJson( json ) {
+		return this.setBrain( JSON.parse( json ) );
 	}
 };
 
