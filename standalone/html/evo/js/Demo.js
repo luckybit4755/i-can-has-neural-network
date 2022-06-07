@@ -38,13 +38,17 @@ class Demo {
 	click() {
 		const values = this.getValues();
 
+
 		this.evo.configure(
-			values.get( 'hidden' ),
-			values.get( 'size' ),
-			values.get( 'nubCount' ),
-			values.get( 'generation' ),
-			values.get( 'mechanism' ),
-			values.get( 'iterationsPerFrame' )
+			  values.get( 'hidden' )
+			, values.get( 'size' )
+			, values.get( 'nubCount' )
+			, values.get( 'generation' )
+			, values.get( 'mechanism' )
+			, values.get( 'iterationsPerFrame' )
+			, values.get( 'maxSurvival' )
+			, values.get( 'maxGenerations' )
+			, values.get( 'mutationRate' ) / 1000
 		);
 		this.evo.run();
 	}
@@ -145,10 +149,15 @@ class Demo {
 
 	controls() {
 		const controls = new Map();
+		const elements = new Map();
+
 		'button input select'.split( ' ' ).forEach( tag => {
 			Array.from( 
 				document.getElementsByTagName( tag ) 
 			).forEach( element => {
+				const name = element.name;
+				elements.set( name, element );
+
 				let get = () => element.value;
 				switch( tag ) {
 					case 'button': get = () => element; break;
@@ -158,9 +167,37 @@ class Demo {
 					);
 					break;
 				}
-				controls.set( element.name, get );
+				if( 'range' === element.type ) {
+					Array.from( document.getElementsByName( name ) ).forEach( ele => {
+						if ( 'VALUE' === ele.tagName ) {
+							element.addEventListener( 'input', (e)=> {
+								ele.innerHTML = e.target.value / 10.00 + '%'
+							});
+							element.hack = ele;
+						}
+					});
+				}
+
+
+				controls.set( name, get );
 			})
 		});
+
+		Array.from( document.getElementsByTagName( 'rc' ) ).forEach( rc => {
+			const target = elements.get( rc.getAttribute( 'target' ) );
+			const delta = parseInt( rc.getAttribute( 'delta' ) );
+			const min = parseInt( parseInt( target.getAttribute( 'min' ) ) );
+			const max = parseInt( parseInt( target.getAttribute( 'max' ) ) );
+
+			rc.addEventListener( 'click', (e)=> {
+				const nu = parseInt( target.value ) + delta;
+				if ( nu >= min && nu <= max ) {
+					target.value = nu;
+					target.hack.innerHTML = target.value / 10.00 + '%'
+				}
+			});
+		});
+
 		return controls;
 	}
 };
